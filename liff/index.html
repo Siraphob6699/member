@@ -74,7 +74,7 @@ const TIER_CARD = {
 };
 const typeIcon = t => t === 'shipping' ? 'truck' : t === 'gift' ? 'gift' : 'pct';
 const rewardLine = r => r.type === 'baht' ? `ลด ${num(r.value)} บาท` : r.type === 'percent' ? `ลด ${r.value}%` : r.type === 'shipping' ? 'ส่งฟรี' : (r.value || 'ของแถม');
-const couponState = c => c.status === 'used' ? 'used' : c.expires_at <= nowIso() ? 'expired' : 'ready';
+const couponState = c => ['used', 'confirmed'].includes(c.status) ? 'used' : c.expires_at <= nowIso() ? 'expired' : 'ready';
 
 function header(title, { back = true } = {}) {
   return `<div class="sticky top-0 z-10 bg-white/90 backdrop-blur flex items-center justify-between px-4 h-14">
@@ -266,6 +266,7 @@ V.code = (code) => {
       <p class="text-[42px] font-extrabold tracking-wider text-slate-900 leading-none">${esc(c.code.slice(0, 4))}-${esc(c.code.slice(4))}</p>
     </div>
     <p class="mt-5 inline-flex items-center gap-2 rounded-2xl border border-slate-100 px-4 py-3 text-sm text-slate-600">${icon('clock', 'w-4 h-4')} กดใช้เมื่อ ${date(c.used_at)} · ${time(c.used_at)}</p>
+    ${c.status === 'confirmed' ? `<p class="mt-2 text-sm font-semibold text-neutral-500">ร้านยืนยันการใช้คูปองนี้แล้ว</p>` : ''}
     <div class="mt-5 flex items-center gap-4 text-left rounded-2xl bg-brand-50 p-4">
       <span class="text-brand-600">${icon('phone', 'w-9 h-9')}</span>
       <div><p class="font-bold text-brand-700">แคปหน้าจอนี้ส่งให้แอดมิน</p><p class="text-xs text-slate-500">เพื่อรับส่วนลดได้เลยค่ะ</p></div>
