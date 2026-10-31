@@ -143,10 +143,10 @@ function confirmBox(text, onYes) {
 }
 
 // ---------- shell ----------
-const NAV = [['dashboard', 'ภาพรวม', 'home'], ['shops', 'ร้าน', 'store'], ['customers', 'ลูกค้า', 'users'], ['rewards', 'ของรางวัล', 'gift'], ['campaigns', 'แคมเปญ', 'mega'], ['settings', 'ตั้งค่า', 'cog'], ['audit', 'ประวัติการแก้ไข', 'list']];
+const NAV = [['dashboard', 'ภาพรวม', 'home'], ['shops', 'ร้าน', 'store'], ['customers', 'ลูกค้า', 'users'], ['coupon', 'ตรวจคูปอง', 'ticket'], ['rewards', 'ของรางวัล', 'gift'], ['campaigns', 'แคมเปญ', 'mega'], ['settings', 'ตั้งค่า', 'cog'], ['audit', 'ประวัติการแก้ไข', 'list']];
 const TITLES = {
   dashboard: ['ภาพรวม', 'สรุปข้อมูลสมาชิก และยอดขายจากระบบสะสมแต้ม'], shops: ['ร้าน', 'ร้าน KetShop และ LINE OA ที่ผูกไว้'],
-  customers: ['ลูกค้า', 'ค้นหาสมาชิกด้วยเบอร์โทร'], customer: ['รายละเอียดลูกค้า', ''], rewards: ['ของรางวัล', 'รางวัลและคูปองที่ลูกค้าแลกได้'],
+  customers: ['ลูกค้า', 'ค้นหาสมาชิกด้วยเบอร์โทร'], coupon: ['ตรวจคูปอง', 'ใส่รหัสจากภาพที่ลูกค้าส่งมา เช็กว่าจริงไหม ใช้ไปแล้วหรือยัง'], customer: ['รายละเอียดลูกค้า', ''], rewards: ['ของรางวัล', 'รางวัลและคูปองที่ลูกค้าแลกได้'],
   campaigns: ['แคมเปญ', 'เลือก template แล้วตั้งค่าได้เลย'], settings: ['ตั้งค่า', 'แต้ม ระดับสมาชิก และผู้ดูแลระบบ'], audit: ['ประวัติการแก้ไข', 'ใครทำอะไร เมื่อไหร่ (300 รายการล่าสุด)'],
 };
 
@@ -187,7 +187,7 @@ async function paint() {
   const el = document.getElementById('page'), seq = ++paintSeq;
   R.length = 0;
   el.innerHTML = `<div class="card p-16 grid place-items-center"><div class="w-9 h-9 rounded-full border-4 border-mint-100 border-t-mint-500 animate-spin"></div></div>`;
-  if (!A.shopId && !['shops', 'settings', 'audit'].includes(A.page)) {
+  if (!A.shopId && !['shops', 'settings', 'audit', 'coupon'].includes(A.page)) {
     el.innerHTML = `<div class="card p-12 text-center"><p class="text-lg font-bold">ยังไม่มีร้าน</p><p class="text-slate-400 mt-1">เริ่มจากสร้างร้านและผูก LINE OA</p><button class="${btnP} mt-5" onclick="nav('shops')">ไปที่หน้าร้าน</button></div>`;
     return;
   }
@@ -305,8 +305,8 @@ P.customer = async (id) => {
     ${sec('LINE ที่ผูก', d.links.length ? d.links.map(l => `<div class="flex items-center gap-3 py-2"><div class="flex-1"><p class="font-medium">${esc(l.display_name)}</p><p class="text-xs text-slate-400">${esc(l.oa_name)} · ผูกเมื่อ ${date(l.linked_at)}</p></div>
       <button class="${btnG} text-rose-500" onclick="unlinkLine(${reg(l)})">ยกเลิกการผูก</button></div>`).join('') : empty('ยังไม่ผูก LINE'))}
     ${sec('คูปอง', d.coupons.length ? `<div class="divide-y divide-slate-100">${d.coupons.map(x => `<div class="flex items-center gap-3 py-2.5"><div class="flex-1"><p class="font-medium">${esc(x.name)} <span class="text-xs text-slate-400 font-mono">${esc(x.code)}</span></p>
-      <p class="text-xs text-slate-400">${x.status === 'used' ? 'ใช้เมื่อ ' + dt(x.used_at) : x.expires_at <= new Date().toISOString() ? 'หมดอายุ ' + date(x.expires_at) : 'ใช้ได้ถึง ' + date(x.expires_at)}</p></div>
-      ${x.status === 'used' ? `<button class="${btnG}" onclick="restoreCoupon('${esc(x.code)}','${esc(id)}')">คืนคูปอง</button>` : '<span class="text-xs text-mint-600 font-semibold px-3">ใช้ได้</span>'}</div>`).join('')}</div>` : empty('ยังไม่มีคูปอง'))}
+      <p class="text-xs text-slate-400">${x.status === 'confirmed' ? 'ร้านยืนยันแล้ว · ใช้เมื่อ ' + dt(x.used_at) : x.status === 'used' ? 'ใช้เมื่อ ' + dt(x.used_at) : x.expires_at <= new Date().toISOString() ? 'หมดอายุ ' + date(x.expires_at) : 'ใช้ได้ถึง ' + date(x.expires_at)}</p></div>
+      ${['used', 'confirmed'].includes(x.status) ? `<button class="${btnG}" onclick="restoreCoupon('${esc(x.code)}','${esc(id)}')">คืนคูปอง</button>` : '<span class="text-xs text-mint-600 font-semibold px-3">ใช้ได้</span>'}</div>`).join('')}</div>` : empty('ยังไม่มีคูปอง'))}
     ${sec('ประวัติบิล', d.orders.length ? `<div class="divide-y divide-slate-100">${d.orders.map(o => `<div class="flex items-center gap-3 py-2.5"><div class="flex-1"><p class="font-medium">บิล #${esc(o.bill_no)}</p><p class="text-xs text-slate-400">${dt(o.created_at)}</p></div>
       <div class="text-right"><p class="font-semibold ${o.status === 'cancelled' ? 'line-through text-slate-400' : ''}">${baht(o.net_total)}</p><p class="text-xs ${o.status === 'cancelled' ? 'text-rose-500' : 'text-mint-600'}">${o.status === 'cancelled' ? 'ยกเลิก' : '+' + num(o.points) + ' แต้ม'}</p></div></div>`).join('')}</div>` : empty('ยังไม่มีบิล'))}
     ${sec('ประวัติแต้ม', d.ledger.length ? `<div class="divide-y divide-slate-100">${d.ledger.map(l => `<div class="flex items-center gap-3 py-2.5"><div class="flex-1 min-w-0"><p class="font-medium truncate">${esc(l.reason === 'บิล' ? 'บิล #' + l.ref : l.reason)}</p>
@@ -505,6 +505,31 @@ function editAdmin(a = {}) {
 }
 function deleteAdmin(a) { confirmBox(`ลบผู้ดูแล "${a.name}"?`, async () => { await api('deleteAdmin', { adminId: a.admin_id }); refresh(); }); }
 function unlinkAdminLine(a) { confirmBox(`ยกเลิก LINE ของ "${a.name}"?`, async () => { await api('unlinkAdminLine', { adminId: a.admin_id }); refresh(); }); }
+
+P.coupon = async (code) => {
+  const form = `<form onsubmit="event.preventDefault();A.arg=this.code.value;paint()" class="flex gap-2 max-w-md">
+      <input name="code" value="${esc(code || '')}" placeholder="เช่น SF8K-92QX" autocomplete="off" class="inp flex-1 font-mono uppercase tracking-wider text-lg">
+      <button class="${btnP}">${icon('search')} ตรวจ</button></form>`;
+  if (!code) return `<div class="card p-6">${form}</div>`;
+  const c = await api('checkCoupon', { code });
+  const box = (tone, title, sub) => `<div class="rounded-2xl p-5 mt-5 ${tone}"><p class="text-xl font-extrabold">${title}</p>${sub ? `<p class="text-sm mt-1">${sub}</p>` : ''}</div>`;
+  if (!c.found) return `<div class="card p-6">${form}${box('bg-rose-50 text-rose-700', 'ไม่พบรหัสนี้ในระบบ', 'อาจพิมพ์ผิด หรือเป็นคูปองปลอม อย่าให้ส่วนลด')}</div>`;
+  const status = c.status === 'confirmed' ? box('bg-rose-50 text-rose-700', 'ใช้ไปแล้ว ห้ามให้ส่วนลดซ้ำ', `ยืนยันเมื่อ ${dt(c.confirmed_at || c.used_at)}${c.confirmed_by ? ' โดย ' + esc(c.confirmed_by) : ''}`)
+    : c.expired ? box('bg-slate-100 text-slate-600', 'คูปองหมดอายุแล้ว', 'หมดอายุ ' + date(c.expires_at))
+    : box('bg-mint-50 text-mint-700', 'ใช้ได้ ✓', c.status === 'used' ? `ลูกค้ากดใช้เมื่อ ${dt(c.used_at)}` : 'ลูกค้ายังไม่ได้กดใช้ในแอป แต่คูปองยังใช้ได้');
+  const row = (k, v) => `<div class="flex justify-between gap-4 py-2.5"><span class="text-slate-500">${k}</span><span class="font-semibold text-right">${v}</span></div>`;
+  return `<div class="card p-6">${form}${status}
+    <div class="mt-4 max-w-md divide-y divide-slate-100 text-sm">
+      ${row('รหัส', `<span class="font-mono">${esc(c.code)}</span>`)}${row('รางวัล', esc(c.name))}${row('เบอร์ลูกค้า', esc(c.phone))}${row('ร้าน', esc(c.shop))}
+      ${row('แลกเมื่อ', dt(c.issued_at))}${row('ใช้ได้ถึง', date(c.expires_at))}
+    </div>
+    ${c.status !== 'confirmed' && !c.expired ? `<button class="${btnP} mt-5 h-12 px-6" onclick="confirmCoupon('${esc(c.code)}')">${icon('ticket')} ยืนยันใช้คูปองนี้</button>
+    <p class="text-xs text-slate-400 mt-2">กดเมื่อให้ส่วนลดลูกค้าแล้ว หลังยืนยัน รหัสนี้ใช้ซ้ำไม่ได้</p>` : ''}
+  </div>`;
+};
+function confirmCoupon(code) {
+  confirmBox(`ยืนยันใช้คูปอง ${code}? หลังยืนยันรหัสนี้จะใช้ซ้ำไม่ได้`, async () => { await api('confirmCoupon', { code }); toast('ยืนยันแล้ว'); refresh(); });
+}
 
 P.audit = async () => {
   const list = await api('audit');
