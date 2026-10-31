@@ -33,6 +33,9 @@ const OA = params.get('oa') || stateQs.get('oa');
 const DEMO = !API || params.has('demo');
 
 const S = { idToken: null, me: null, rewards: [], coupons: [], history: [], stack: [] };
+let loggedIn; const LOGIN = new Promise(r => (loggedIn = r));
+// Last home screen per OA, shown instantly on the next open while fresh data loads (each server call takes seconds).
+const CACHE = 'crm_home_' + OA, LIFF_KEY = 'crm_liff_' + OA;
 const app = document.getElementById('app');
 
 // ---------- helpers ----------
@@ -81,6 +84,7 @@ const btn = (label, on, extra = '') => `<button onclick="${on}" class="w-full h-
 // ---------- api ----------
 async function api(action, extra = {}) {
   if (DEMO) return demo(action, extra);
+  if (action !== 'config') await LOGIN; // a cached screen can be tapped before LINE login finishes
   const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action, oaId: OA, idToken: S.idToken, ...extra }) });
   const j = await r.json();
   if (j && j.error) throw new Error(j.error);
@@ -293,7 +297,7 @@ function doRedeem(el, id) {
   busy(el, async () => {
     const c = await api('redeem', { rewardId: id });
     const r = S.rewards.find(x => x.reward_id === id);
-    [S.me, S.coupons] = await Promise.all([api('me'), api('coupons')]);
+    await loadHome(false);
     S.stack.push(['redeemed', { ...c, name: r.name }]); render();
   });
 }
@@ -319,11 +323,18 @@ function confirmUse(el, code) {
   });
 }
 
-async function loadHome() {
-  const me = await api('me');
-  if (!me.linked) { S.stack = [['bind']]; return render(); }
-  [S.rewards, S.coupons, S.history] = await Promise.all([api('rewards'), api('coupons'), api('history')]);
-  S.me = me; S.stack = [['home']]; render();
+// show=false only refreshes data; otherwise re-render, but never pull the customer off a screen they opened meanwhile.
+async function loadHome(show = true) {
+  const h = await api('home');
+  if (!h.me.linked) { localStorage.removeItem(CACHE); S.stack = [['bind']]; return render(); }
+  localStorage.setItem(CACHE, JSON.stringify(h));
+  showHome(h, show);
+}
+function showHome(h, show) {
+  ({ me: S.me, rewards: S.rewards, coupons: S.coupons, history: S.history } = h);
+  if (!show) return;
+  if (!S.stack.length || S.stack[0][0] === 'bind') S.stack = [['home']];
+  if (S.stack.length === 1) render();
 }
 
 // History & coupon screens reload on open so a bill or redemption made elsewhere shows up.
@@ -338,13 +349,17 @@ async function start() {
   try {
     if (!DEMO) {
       if (!OA) throw new Error('ลิงก์ไม่ถูกต้อง กรุณาเปิดจากเมนูใน LINE');
-      const { liffId } = await api('config');
-      await liff.init({ liffId });
+      const cached = JSON.parse(localStorage.getItem(CACHE) || 'null');
+      if (cached) showHome(cached, true);
+      const liffId = localStorage.getItem(LIFF_KEY) || (await api('config')).liffId;
+      try { await liff.init({ liffId }); } catch (e) { localStorage.removeItem(LIFF_KEY); throw e; }
+      localStorage.setItem(LIFF_KEY, liffId);
       if (!liff.isLoggedIn()) return liff.login({ redirectUri: location.href });
       S.idToken = liff.getIDToken();
     }
+    loggedIn();
     await loadHome();
-  } catch (e) { showError(e.message); }
+  } catch (e) { if (!S.stack.length) showError(e.message); else toast(e.message); }
 }
 
 // ---------- demo data (only when API is empty or ?demo=1) ----------
@@ -376,6 +391,7 @@ const D = (() => {
 async function demo(action, x) {
   await new Promise(r => setTimeout(r, 300));
   if (action === 'me') return D.linked ? D.me : { linked: false };
+  if (action === 'home') return D.linked ? { me: D.me, rewards: D.rewards, coupons: D.coupons, history: D.history } : { me: { linked: false } };
   if (action === 'bind') { if (x.phone.replace(/\D/g, '') === '0811111111') throw new Error('เบอร์นี้ถูกใช้แล้ว กรุณาทักแอดมิน'); D.linked = true; return { linked: true }; }
   if (action === 'rewards') return D.rewards;
   if (action === 'coupons') return D.coupons;
