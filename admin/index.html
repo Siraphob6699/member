@@ -11,20 +11,20 @@
   <script>
     tailwind.config = { theme: { extend: {
       fontFamily: { thai: ['"Noto Sans Thai"', 'sans-serif'] },
-      colors: { mint: { 50: '#EEF9F3', 100: '#D8F2E4', 200: '#B5E8CD', 500: '#2DB674', 600: '#22A065', 700: '#17804F' } },
+      colors: { brand: { 50: '#FDECEC', 100: '#FAD4D3', 200: '#F5A9A7', 500: '#E53935', 600: '#C62828', 700: '#B71C1C' } },
       boxShadow: { soft: '0 4px 20px -6px rgba(15,23,42,.08)' },
     } } };
   </script>
   <style>
     body { -webkit-tap-highlight-color: transparent; }
-    .card { background: #fff; border-radius: 1.25rem; border: 1px solid #EEF2F0; box-shadow: 0 4px 20px -6px rgba(15,23,42,.06); }
+    .card { background: #fff; border-radius: 1.25rem; border: 1px solid #ECECEC; box-shadow: 0 4px 20px -6px rgba(15,23,42,.06); }
     .inp { width: 100%; height: 2.75rem; border-radius: .9rem; border: 1px solid #E2E8F0; padding: 0 .9rem; background: #fff; }
-    .inp:focus { outline: none; border-color: #2DB674; box-shadow: 0 0 0 4px #D8F2E4; }
+    .inp:focus { outline: none; border-color: #E53935; box-shadow: 0 0 0 4px #FAD4D3; }
     textarea.inp { height: auto; padding: .6rem .9rem; }
     th { font-weight: 500; }
   </style>
 </head>
-<body class="font-thai bg-[#F4F7F6] text-slate-800">
+<body class="font-thai bg-neutral-100 text-neutral-900">
 <div id="app"></div>
 
 <script>
@@ -76,15 +76,15 @@ const I = {
 };
 const icon = (n, c = 'w-5 h-5') => `<svg class="${c}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`;
 
-const TIER_BADGE = { Gold: 'bg-amber-50 text-amber-700', Silver: 'bg-slate-100 text-slate-600', Member: 'bg-mint-50 text-mint-700' };
+const TIER_BADGE = { Member: 'bg-white text-neutral-700 ring-1 ring-neutral-200', Silver: 'bg-slate-200 text-slate-700', Gold: 'bg-amber-100 text-amber-800', Black: 'bg-neutral-900 text-white' };
 const tierBadge = t => `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${TIER_BADGE[t] || 'bg-violet-50 text-violet-700'}">${icon('crown', 'w-3.5 h-3.5')}${esc(t)}</span>`;
 const TYPES = [['baht', 'ส่วนลด (บาท)'], ['percent', 'ส่วนลด (%)'], ['gift', 'ของแถม'], ['shipping', 'ส่งฟรี']];
 const typeName = t => (TYPES.find(x => x[0] === t) || [, 'อื่นๆ'])[1];
 const rewardLine = r => r.type === 'baht' ? `ลด ${num(r.value)} บาท` : r.type === 'percent' ? `ลด ${r.value}%` : r.type === 'shipping' ? 'ส่งฟรี' : (r.value || 'ของแถม');
-const btnP = 'inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-mint-500 hover:bg-mint-600 text-white font-semibold text-sm disabled:opacity-50';
-const btnS = 'inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl border border-mint-500 text-mint-700 hover:bg-mint-50 font-semibold text-sm';
+const btnP = 'inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm disabled:opacity-50';
+const btnS = 'inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl border border-brand-500 text-brand-700 hover:bg-brand-50 font-semibold text-sm';
 const btnG = 'inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg text-slate-500 hover:bg-slate-100 text-sm';
-const toggle = (on, h) => `<button onclick="${h}" class="w-11 h-6 rounded-full relative transition ${on ? 'bg-mint-500' : 'bg-slate-200'}" aria-label="เปิด/ปิด"><span class="absolute top-0.5 ${on ? 'left-[22px]' : 'left-0.5'} w-5 h-5 rounded-full bg-white shadow transition-all"></span></button>`;
+const toggle = (on, h) => `<button onclick="${h}" class="w-11 h-6 rounded-full relative transition ${on ? 'bg-brand-500' : 'bg-slate-200'}" aria-label="เปิด/ปิด"><span class="absolute top-0.5 ${on ? 'left-[22px]' : 'left-0.5'} w-5 h-5 rounded-full bg-white shadow transition-all"></span></button>`;
 
 function toast(msg, bad) {
   const t = document.createElement('div');
@@ -117,7 +117,7 @@ function formModal(title, fields, vals, onSave) {
   const field = f => {
     const v = vals[f.k] ?? '';
     const id = 'f_' + f.k;
-    if (f.type === 'checkbox') return `<label class="flex items-center gap-3 text-sm"><input id="${id}" type="checkbox" ${v === 'TRUE' || v === true ? 'checked' : ''} class="w-5 h-5 accent-[#2DB674]"> ${f.label}</label>`;
+    if (f.type === 'checkbox') return `<label class="flex items-center gap-3 text-sm"><input id="${id}" type="checkbox" ${v === 'TRUE' || v === true ? 'checked' : ''} class="w-5 h-5 accent-[#E53935]"> ${f.label}</label>`;
     const input = f.type === 'select' ? `<select id="${id}" class="inp">${f.options.map(([o, l]) => `<option value="${esc(o)}" ${String(o) === String(v) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`
       : f.type === 'textarea' ? `<textarea id="${id}" rows="3" class="inp">${esc(v)}</textarea>`
       : `<input id="${id}" type="${f.type || 'text'}" value="${esc(v)}" class="inp" ${f.type === 'number' ? 'step="any"' : ''}>`;
@@ -156,16 +156,16 @@ function shell() {
   app.innerHTML = `<div class="min-h-screen lg:flex">
     <div class="${A.menu ? '' : 'hidden'} lg:hidden fixed inset-0 bg-slate-900/30 z-30" onclick="A.menu=false;shell();paint()"></div>
     <aside class="${A.menu ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:sticky top-0 left-0 z-40 h-screen w-72 shrink-0 p-4 transition-transform">
-      <div class="card h-full flex flex-col p-5">
+      <div class="h-full flex flex-col p-5 rounded-[1.25rem] bg-neutral-950 text-white shadow-soft">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-mint-500 text-white grid place-items-center">${icon('store', 'w-6 h-6')}</div>
-          <div><p class="text-lg font-bold leading-tight">Member Club</p><p class="text-xs text-slate-400">ระบบสมาชิกสะสมแต้ม</p></div>
+          <div class="w-12 h-12 rounded-2xl bg-brand-500 text-white grid place-items-center">${icon('store', 'w-6 h-6')}</div>
+          <div><p class="text-lg font-bold leading-tight">Member Club</p><p class="text-xs text-neutral-400">ระบบสมาชิกสะสมแต้ม</p></div>
         </div>
-        <nav class="mt-8 space-y-1 flex-1">${NAV.map(([k, t, ic]) => `<button onclick="nav('${k}')" class="w-full flex items-center gap-4 h-12 px-4 rounded-2xl ${k === cur ? 'bg-mint-50 text-mint-700 font-bold' : 'text-slate-600 hover:bg-slate-50'}">${icon(ic, 'w-[22px] h-[22px]')}<span>${t}</span></button>`).join('')}</nav>
-        <div class="border-t border-slate-100 pt-4 flex items-center gap-3">
-          <div class="w-11 h-11 rounded-full bg-mint-100 text-mint-700 grid place-items-center font-bold">${esc(A.name.slice(0, 1))}</div>
-          <div class="flex-1 min-w-0"><p class="font-semibold truncate">${esc(A.name)}</p><p class="text-xs text-slate-400">ผู้ดูแลระบบ</p></div>
-          <button onclick="logout()" class="${btnG}" title="ออกจากระบบ">${icon('out')}</button>
+        <nav class="mt-8 space-y-1 flex-1">${NAV.map(([k, t, ic]) => `<button onclick="nav('${k}')" class="w-full flex items-center gap-4 h-12 px-4 rounded-2xl ${k === cur ? 'bg-brand-500 text-white font-bold' : 'text-neutral-300 hover:bg-white/10'}">${icon(ic, 'w-[22px] h-[22px]')}<span>${t}</span></button>`).join('')}</nav>
+        <div class="border-t border-white/10 pt-4 flex items-center gap-3">
+          <div class="w-11 h-11 rounded-full bg-white/10 text-white grid place-items-center font-bold">${esc(A.name.slice(0, 1))}</div>
+          <div class="flex-1 min-w-0"><p class="font-semibold truncate">${esc(A.name)}</p><p class="text-xs text-neutral-400">ผู้ดูแลระบบ</p></div>
+          <button onclick="logout()" class="inline-flex items-center justify-center h-9 px-3 rounded-lg text-neutral-400 hover:bg-white/10 hover:text-white" title="ออกจากระบบ" aria-label="ออกจากระบบ">${icon('out')}</button>
         </div>
       </div>
     </aside>
@@ -173,7 +173,7 @@ function shell() {
       <div class="card p-5 lg:p-6 flex flex-wrap items-center gap-4">
         <button class="lg:hidden ${btnG}" onclick="A.menu=true;shell();paint()">${icon('menu', 'w-6 h-6')}</button>
         <div class="flex-1 min-w-[180px]"><h1 class="text-2xl lg:text-[28px] font-extrabold">${title}</h1>${sub ? `<p class="text-sm text-slate-400 mt-0.5">${sub}</p>` : ''}</div>
-        ${A.shops.length && !['shops', 'audit'].includes(A.page) ? `<label class="relative">${icon('store', 'w-5 h-5 absolute left-3.5 top-3 text-mint-600')}
+        ${A.shops.length && !['shops', 'audit'].includes(A.page) ? `<label class="relative">${icon('store', 'w-5 h-5 absolute left-3.5 top-3 text-brand-600')}
           <select onchange="setShop(this.value)" class="inp pl-11 pr-8 min-w-[200px]">${A.shops.map(s => `<option value="${esc(s.shop_id)}" ${s.shop_id === A.shopId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label>` : ''}
       </div>
       <div id="page" class="mt-4"></div>
@@ -186,7 +186,7 @@ let paintSeq = 0;
 async function paint() {
   const el = document.getElementById('page'), seq = ++paintSeq;
   R.length = 0;
-  el.innerHTML = `<div class="card p-16 grid place-items-center"><div class="w-9 h-9 rounded-full border-4 border-mint-100 border-t-mint-500 animate-spin"></div></div>`;
+  el.innerHTML = `<div class="card p-16 grid place-items-center"><div class="w-9 h-9 rounded-full border-4 border-brand-100 border-t-brand-500 animate-spin"></div></div>`;
   if (!A.shopId && !['shops', 'settings', 'audit', 'coupon'].includes(A.page)) {
     el.innerHTML = `<div class="card p-12 text-center"><p class="text-lg font-bold">ยังไม่มีร้าน</p><p class="text-slate-400 mt-1">เริ่มจากสร้างร้านและผูก LINE OA</p><button class="${btnP} mt-5" onclick="nav('shops')">ไปที่หน้าร้าน</button></div>`;
     return;
@@ -218,33 +218,33 @@ P.dashboard = async () => {
     return `<div class="card p-5"><div class="flex items-center gap-3">
       <div class="w-12 h-12 rounded-full grid place-items-center ${color}">${icon(ic, 'w-6 h-6')}</div>
       <div class="min-w-0"><p class="text-sm text-slate-500">${label}</p><p class="text-2xl font-extrabold">${fmt(cur[val])}</p></div></div>
-      <p class="text-xs mt-3 ${c === null ? 'text-slate-400' : c >= 0 ? 'text-mint-600' : 'text-rose-500'} flex items-center gap-1">${c === null ? 'ยังไม่มีข้อมูลเดือนก่อน' : `${icon(c >= 0 ? 'up' : 'down', 'w-4 h-4')}<b>${c >= 0 ? '+' : ''}${c}%</b> <span class="text-slate-400">จากเดือนก่อน</span>`}</p></div>`;
+      <p class="text-xs mt-3 ${c === null ? 'text-slate-400' : c >= 0 ? 'text-emerald-600' : 'text-rose-500'} flex items-center gap-1">${c === null ? 'ยังไม่มีข้อมูลเดือนก่อน' : `${icon(c >= 0 ? 'up' : 'down', 'w-4 h-4')}<b>${c >= 0 ? '+' : ''}${c}%</b> <span class="text-slate-400">จากเดือนก่อน</span>`}</p></div>`;
   };
   const max = Math.max(1, ...d.months.map(m => m.members));
-  const COLORS = { baht: '#2DB674', percent: '#8B5CF6', gift: '#F5C04A', shipping: '#F472B6', other: '#CBD5E1' };
+  const COLORS = { baht: '#E53935', percent: '#8B5CF6', gift: '#F5C04A', shipping: '#F472B6', other: '#CBD5E1' };
   const total = Object.values(d.byType).reduce((s, n) => s + n, 0);
   let acc = 0;
   const segs = Object.entries(d.byType).map(([t, n]) => { const from = acc; acc += (n / total) * 100; return `${COLORS[t] || COLORS.other} ${from}% ${acc}%`; });
   return `<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
-      ${stat('users', 'bg-mint-50 text-mint-600', 'สมาชิกใหม่เดือนนี้', 'members')}
+      ${stat('users', 'bg-brand-50 text-brand-600', 'สมาชิกใหม่เดือนนี้', 'members')}
       ${stat('star', 'bg-amber-50 text-amber-500', 'แต้มที่แจก', 'issued')}
       ${stat('coins', 'bg-rose-50 text-rose-500', 'แต้มที่ถูกแลก', 'redeemed')}
       ${stat('ticket', 'bg-violet-50 text-violet-500', 'คูปองที่ใช้', 'couponsUsed')}
-      ${stat('bag', 'bg-mint-50 text-mint-600', 'ยอดซื้อสมาชิก', 'spend', baht)}
+      ${stat('bag', 'bg-brand-50 text-brand-600', 'ยอดซื้อสมาชิก', 'spend', baht)}
     </div>
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-4">
       <div class="card p-6 xl:col-span-2">
-        <h2 class="font-bold text-lg flex items-center gap-2"><span class="text-mint-500">${icon('users')}</span>สมาชิกใหม่รายเดือน</h2>
+        <h2 class="font-bold text-lg flex items-center gap-2"><span class="text-brand-500">${icon('users')}</span>สมาชิกใหม่รายเดือน</h2>
         <p class="text-sm text-slate-400">จำนวนสมาชิกใหม่ 6 เดือนล่าสุด · สมาชิกทั้งหมด ${num(d.totalMembers)} คน</p>
         <div class="mt-6 h-56 flex items-end gap-3 sm:gap-6 border-b border-slate-100 px-2">
           ${d.months.map(m => `<div class="flex-1 flex flex-col items-center justify-end h-full">
             <span class="text-sm font-bold mb-1">${num(m.members)}</span>
-            <div class="w-full max-w-[64px] rounded-t-xl bg-gradient-to-t from-mint-200 to-mint-100 ${m === cur ? '!from-mint-500 !to-mint-200' : ''}" style="height:${(m.members / max) * 85 + 2}%"></div></div>`).join('')}
+            <div class="w-full max-w-[64px] rounded-t-xl bg-gradient-to-t from-brand-200 to-brand-100 ${m === cur ? '!from-brand-500 !to-brand-200' : ''}" style="height:${(m.members / max) * 85 + 2}%"></div></div>`).join('')}
         </div>
         <div class="flex gap-3 sm:gap-6 px-2 mt-2">${d.months.map(m => `<p class="flex-1 text-center text-xs text-slate-400">${monthTh(m.month)}</p>`).join('')}</div>
       </div>
       <div class="card p-6">
-        <h2 class="font-bold text-lg flex items-center gap-2"><span class="text-mint-500">${icon('gift')}</span>สัดส่วนการแลกของรางวัล</h2>
+        <h2 class="font-bold text-lg flex items-center gap-2"><span class="text-brand-500">${icon('gift')}</span>สัดส่วนการแลกของรางวัล</h2>
         ${total ? `<div class="mt-6 flex flex-col sm:flex-row xl:flex-col 2xl:flex-row items-center gap-6">
           <div class="relative w-44 h-44 shrink-0 rounded-full" style="background:conic-gradient(${segs.join(',')})">
             <div class="absolute inset-7 rounded-full bg-white grid place-items-center text-center"><div><p class="text-2xl font-extrabold">${num(total)}</p><p class="text-xs text-slate-400">ครั้ง</p></div></div></div>
@@ -254,7 +254,7 @@ P.dashboard = async () => {
     </div>
     <div class="card p-6 mt-4">
       <div class="flex items-center justify-between gap-4">
-        <div><h2 class="font-bold text-lg flex items-center gap-2"><span class="text-mint-500">${icon('users')}</span>ลูกค้าล่าสุด</h2><p class="text-sm text-slate-400">สมาชิกที่สมัครล่าสุด 10 คน</p></div>
+        <div><h2 class="font-bold text-lg flex items-center gap-2"><span class="text-brand-500">${icon('users')}</span>ลูกค้าล่าสุด</h2><p class="text-sm text-slate-400">สมาชิกที่สมัครล่าสุด 10 คน</p></div>
         <button class="${btnS}" onclick="nav('customers')">ดูทั้งหมด →</button>
       </div>
       ${customerTable(d.recent, true)}
@@ -265,11 +265,11 @@ function customerTable(list, recent) {
   if (!list.length) return `<p class="text-center text-slate-400 py-12">ไม่พบลูกค้า</p>`;
   return `<div class="overflow-x-auto mt-4"><table class="w-full text-sm whitespace-nowrap">
     <thead><tr class="bg-slate-50 text-slate-500 text-left"><th class="p-3 rounded-l-xl">ชื่อ</th><th class="p-3">เบอร์โทร</th><th class="p-3">ระดับ</th><th class="p-3 text-right">แต้ม</th><th class="p-3 text-right">${recent ? 'ยอดซื้อสะสม' : 'LINE'}</th><th class="p-3 ${recent ? 'rounded-r-xl' : ''}">${recent ? 'สมัครเมื่อ' : 'ซื้อล่าสุด'}</th>${recent ? '' : '<th class="p-3 rounded-r-xl"></th>'}</tr></thead>
-    <tbody class="divide-y divide-slate-100">${list.map(c => `<tr class="hover:bg-mint-50/50 cursor-pointer" onclick="nav('customer','${esc(c.customer_id)}')">
-      <td class="p-3"><div class="flex items-center gap-3">${c.picture ? `<img src="${esc(c.picture)}" class="w-9 h-9 rounded-full object-cover" alt="">` : `<div class="w-9 h-9 rounded-full bg-mint-50 text-mint-700 grid place-items-center font-bold">${esc((c.name || '?').slice(0, 1))}</div>`}<span class="font-medium">${esc(c.name || '-')}</span></div></td>
+    <tbody class="divide-y divide-slate-100">${list.map(c => `<tr class="hover:bg-brand-50/50 cursor-pointer" onclick="nav('customer','${esc(c.customer_id)}')">
+      <td class="p-3"><div class="flex items-center gap-3">${c.picture ? `<img src="${esc(c.picture)}" class="w-9 h-9 rounded-full object-cover" alt="">` : `<div class="w-9 h-9 rounded-full bg-brand-50 text-brand-700 grid place-items-center font-bold">${esc((c.name || '?').slice(0, 1))}</div>`}<span class="font-medium">${esc(c.name || '-')}</span></div></td>
       <td class="p-3">${esc(c.phone.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3'))}</td>
       <td class="p-3">${tierBadge(c.tier)}</td><td class="p-3 text-right font-semibold">${num(c.points)}</td>
-      <td class="p-3 text-right">${recent ? baht(c.spend) : c.linked ? '<span class="text-mint-600">ผูกแล้ว</span>' : '<span class="text-slate-400">ยังไม่ผูก</span>'}</td>
+      <td class="p-3 text-right">${recent ? baht(c.spend) : c.linked ? '<span class="text-emerald-600">ผูกแล้ว</span>' : '<span class="text-slate-400">ยังไม่ผูก</span>'}</td>
       <td class="p-3 text-slate-500">${date(recent ? c.consent_at : c.last_order)}</td>${recent ? '' : `<td class="p-3 text-right"><button class="${btnG}" onclick="event.stopPropagation();adjustPoints('${esc(c.customer_id)}', '${esc(c.phone)}')">${icon('coins')} เพิ่ม/ลดแต้ม</button></td>`}</tr>`).join('')}</tbody></table></div>`;
 }
 
@@ -292,13 +292,13 @@ P.customer = async (id) => {
   const empty = t => `<p class="text-slate-400 text-sm">${t}</p>`;
   return `<button class="${btnG} mb-3" onclick="nav('customers')">${icon('back')} กลับไปรายชื่อลูกค้า</button>
   <div class="card p-6 flex flex-wrap items-center gap-5">
-    <div class="w-16 h-16 rounded-full bg-mint-50 text-mint-700 grid place-items-center text-2xl font-bold">${esc(((d.links[0] || {}).display_name || '?').slice(0, 1))}</div>
+    <div class="w-16 h-16 rounded-full bg-brand-50 text-brand-700 grid place-items-center text-2xl font-bold">${esc(((d.links[0] || {}).display_name || '?').slice(0, 1))}</div>
     <div class="flex-1 min-w-[200px]">
       <p class="text-xl font-bold">${esc((d.links[0] || {}).display_name || 'ยังไม่ผูก LINE')}</p>
       <p class="text-slate-500">${esc(c.phone)} · ${tierBadge(c.tier)}</p>
       <p class="text-xs text-slate-400 mt-1">วันเกิด ${date(c.birthday)} · ยอมรับ PDPA ${dt(c.consent_at)}</p>
     </div>
-    <div class="text-right"><p class="text-sm text-slate-500">แต้มคงเหลือ</p><p class="text-3xl font-extrabold text-mint-700">${num(d.points)}</p><p class="text-xs text-slate-400">ยอดซื้อ 12 เดือน ${baht(d.spend12m)}</p></div>
+    <div class="text-right"><p class="text-sm text-slate-500">แต้มคงเหลือ</p><p class="text-3xl font-extrabold text-brand-700">${num(d.points)}</p><p class="text-xs text-slate-400">ยอดซื้อ 12 เดือน ${baht(d.spend12m)}</p></div>
     <button class="${btnP}" onclick="adjustPoints('${esc(id)}')">${icon('coins')} ปรับแต้ม</button>
   </div>
   <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
@@ -306,11 +306,11 @@ P.customer = async (id) => {
       <button class="${btnG} text-rose-500" onclick="unlinkLine(${reg(l)})">ยกเลิกการผูก</button></div>`).join('') : empty('ยังไม่ผูก LINE'))}
     ${sec('คูปอง', d.coupons.length ? `<div class="divide-y divide-slate-100">${d.coupons.map(x => `<div class="flex items-center gap-3 py-2.5"><div class="flex-1"><p class="font-medium">${esc(x.name)} <span class="text-xs text-slate-400 font-mono">${esc(x.code)}</span></p>
       <p class="text-xs text-slate-400">${x.status === 'confirmed' ? 'ร้านยืนยันแล้ว · ใช้เมื่อ ' + dt(x.used_at) : x.status === 'used' ? 'ใช้เมื่อ ' + dt(x.used_at) : x.expires_at <= new Date().toISOString() ? 'หมดอายุ ' + date(x.expires_at) : 'ใช้ได้ถึง ' + date(x.expires_at)}</p></div>
-      ${['used', 'confirmed'].includes(x.status) ? `<button class="${btnG}" onclick="restoreCoupon('${esc(x.code)}','${esc(id)}')">คืนคูปอง</button>` : '<span class="text-xs text-mint-600 font-semibold px-3">ใช้ได้</span>'}</div>`).join('')}</div>` : empty('ยังไม่มีคูปอง'))}
+      ${['used', 'confirmed'].includes(x.status) ? `<button class="${btnG}" onclick="restoreCoupon('${esc(x.code)}','${esc(id)}')">คืนคูปอง</button>` : '<span class="text-xs text-emerald-600 font-semibold px-3">ใช้ได้</span>'}</div>`).join('')}</div>` : empty('ยังไม่มีคูปอง'))}
     ${sec('ประวัติบิล', d.orders.length ? `<div class="divide-y divide-slate-100">${d.orders.map(o => `<div class="flex items-center gap-3 py-2.5"><div class="flex-1"><p class="font-medium">บิล #${esc(o.bill_no)}</p><p class="text-xs text-slate-400">${dt(o.created_at)}</p></div>
-      <div class="text-right"><p class="font-semibold ${o.status === 'cancelled' ? 'line-through text-slate-400' : ''}">${baht(o.net_total)}</p><p class="text-xs ${o.status === 'cancelled' ? 'text-rose-500' : 'text-mint-600'}">${o.status === 'cancelled' ? 'ยกเลิก' : '+' + num(o.points) + ' แต้ม'}</p></div></div>`).join('')}</div>` : empty('ยังไม่มีบิล'))}
+      <div class="text-right"><p class="font-semibold ${o.status === 'cancelled' ? 'line-through text-slate-400' : ''}">${baht(o.net_total)}</p><p class="text-xs ${o.status === 'cancelled' ? 'text-rose-500' : 'text-emerald-600'}">${o.status === 'cancelled' ? 'ยกเลิก' : '+' + num(o.points) + ' แต้ม'}</p></div></div>`).join('')}</div>` : empty('ยังไม่มีบิล'))}
     ${sec('ประวัติแต้ม', d.ledger.length ? `<div class="divide-y divide-slate-100">${d.ledger.map(l => `<div class="flex items-center gap-3 py-2.5"><div class="flex-1 min-w-0"><p class="font-medium truncate">${esc(l.reason === 'บิล' ? 'บิล #' + l.ref : l.reason)}</p>
-      <p class="text-xs text-slate-400">${dt(l.created_at)}${Number(l.delta) > 0 ? ' · หมดอายุ ' + date(l.expires_at) : ''}</p></div><b class="${Number(l.delta) > 0 ? 'text-mint-600' : 'text-rose-500'}">${Number(l.delta) > 0 ? '+' : ''}${num(l.delta)}</b></div>`).join('')}</div>` : empty('ยังไม่มีรายการ'))}
+      <p class="text-xs text-slate-400">${dt(l.created_at)}${Number(l.delta) > 0 ? ' · หมดอายุ ' + date(l.expires_at) : ''}</p></div><b class="${Number(l.delta) > 0 ? 'text-emerald-600' : 'text-rose-500'}">${Number(l.delta) > 0 ? '+' : ''}${num(l.delta)}</b></div>`).join('')}</div>` : empty('ยังไม่มีรายการ'))}
   </div>`;
 };
 
@@ -336,7 +336,7 @@ P.shops = async () => {
     const oas = d.oas.filter(o => o.shop_id === s.shop_id);
     return `<div class="card p-6">
       <div class="flex flex-wrap items-center gap-4">
-        <div class="w-12 h-12 rounded-2xl bg-mint-50 text-mint-600 grid place-items-center">${icon('store', 'w-6 h-6')}</div>
+        <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 grid place-items-center">${icon('store', 'w-6 h-6')}</div>
         <div class="flex-1"><p class="text-lg font-bold">${esc(s.name)}</p><p class="text-sm text-slate-500">ทุก ${num(s.baht_per_point)} บาท = 1 แต้ม · แต้มอายุ ${num(s.point_expiry_days)} วัน · แจ้งแต้มทาง LINE ${s.notify_points === 'TRUE' ? 'เปิด' : 'ปิด'}</p></div>
         <button class="${btnS}" onclick="editShop(${reg(s)})">${icon('edit', 'w-4 h-4')} แก้ไข</button>
       </div>
@@ -345,7 +345,7 @@ P.shops = async () => {
         ${row('Webhook URL', `${d.webhookBase}?hook=ketshop&shop=${s.shop_id}&secret=${s.webhook_secret}`)}
         <p class="text-xs text-slate-400">เอา URL นี้ไปใส่ในหลังร้าน KetShop · ห้ามเผยแพร่ เพราะมีรหัสลับอยู่</p>
       </div>
-      <div class="mt-5 flex items-center justify-between"><p class="font-semibold">LINE OA (${oas.length})</p><button class="${btnG} text-mint-700" onclick="editOa(${reg({ shop_id: s.shop_id })})">${icon('plus', 'w-4 h-4')} เพิ่ม OA</button></div>
+      <div class="mt-5 flex items-center justify-between"><p class="font-semibold">LINE OA (${oas.length})</p><button class="${btnG} text-brand-700" onclick="editOa(${reg({ shop_id: s.shop_id })})">${icon('plus', 'w-4 h-4')} เพิ่ม OA</button></div>
       <div class="mt-2 space-y-3">${oas.length ? oas.map(o => `<div class="rounded-2xl border border-slate-100 p-4">
         <div class="flex items-center gap-3"><span class="w-8 h-8 rounded-lg bg-[#06C755] text-white grid place-items-center text-[10px] font-bold">LINE</span><p class="flex-1 font-semibold">${esc(o.name)}</p>
           <button class="${btnG}" onclick="editOa(${reg(o)})">${icon('edit', 'w-4 h-4')}</button><button class="${btnG} text-rose-500" onclick="deleteOa(${reg(o)})">${icon('trash', 'w-4 h-4')}</button></div>
@@ -384,8 +384,8 @@ P.rewards = async () => {
   <div class="card p-6 mt-4">${list.length ? `<div class="overflow-x-auto"><table class="w-full text-sm whitespace-nowrap">
     <thead><tr class="bg-slate-50 text-slate-500 text-left"><th class="p-3 rounded-l-xl">รางวัล</th><th class="p-3">ประเภท</th><th class="p-3 text-right">ใช้แต้ม</th><th class="p-3 text-right">คงเหลือ</th><th class="p-3">จำกัด/คน</th><th class="p-3">อายุคูปอง</th><th class="p-3">เฉพาะระดับ</th><th class="p-3">เปิด</th><th class="p-3 rounded-r-xl"></th></tr></thead>
     <tbody class="divide-y divide-slate-100">${list.map(r => `<tr>
-      <td class="p-3"><div class="flex items-center gap-3">${r.image_url ? `<img src="${esc(r.image_url)}" class="w-11 h-11 rounded-xl object-cover" alt="">` : `<div class="w-11 h-11 rounded-xl bg-mint-50 text-mint-600 grid place-items-center">${icon('gift')}</div>`}<div><p class="font-semibold">${esc(r.name)}</p><p class="text-xs text-slate-400">${esc(rewardLine(r))}</p></div></div></td>
-      <td class="p-3">${typeName(r.type)}</td><td class="p-3 text-right font-semibold">${Number(r.points_cost) ? num(r.points_cost) : '<span class="text-mint-600">ฟรี</span>'}</td>
+      <td class="p-3"><div class="flex items-center gap-3">${r.image_url ? `<img src="${esc(r.image_url)}" class="w-11 h-11 rounded-xl object-cover" alt="">` : `<div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 grid place-items-center">${icon('gift')}</div>`}<div><p class="font-semibold">${esc(r.name)}</p><p class="text-xs text-slate-400">${esc(rewardLine(r))}</p></div></div></td>
+      <td class="p-3">${typeName(r.type)}</td><td class="p-3 text-right font-semibold">${Number(r.points_cost) ? num(r.points_cost) : '<span class="text-brand-600">ฟรี</span>'}</td>
       <td class="p-3 text-right">${r.stock === '' ? '∞' : num(r.stock)}</td><td class="p-3">${r.per_customer_limit || '-'}</td><td class="p-3">${num(r.valid_days)} วัน</td>
       <td class="p-3">${r.min_tier ? tierBadge(r.min_tier) : '-'}</td>
       <td class="p-3">${toggle(r.active === 'TRUE', `saveReward(${reg({ ...r, active: r.active === 'TRUE' ? 'FALSE' : 'TRUE' })})`)}</td>
@@ -422,18 +422,18 @@ P.campaigns = async () => {
   const [list, rewards] = await Promise.all([api('campaigns', { shopId: A.shopId }), api('rewards', { shopId: A.shopId })]);
   A.rewards = rewards;
   const now = new Date().toISOString();
-  const status = c => c.active !== 'TRUE' ? ['ปิด', 'bg-slate-100 text-slate-500'] : now < c.start_at ? ['ยังไม่เริ่ม', 'bg-amber-50 text-amber-700'] : now >= c.end_at ? ['จบแล้ว', 'bg-slate-100 text-slate-500'] : ['กำลังทำงาน', 'bg-mint-50 text-mint-700'];
+  const status = c => c.active !== 'TRUE' ? ['ปิด', 'bg-slate-100 text-slate-500'] : now < c.start_at ? ['ยังไม่เริ่ม', 'bg-amber-50 text-amber-700'] : now >= c.end_at ? ['จบแล้ว', 'bg-slate-100 text-slate-500'] : ['กำลังทำงาน', 'bg-brand-50 text-brand-700'];
   const summary = c => {
     const p = JSON.parse(c.params_json || '{}');
     const rw = id => esc((rewards.find(r => r.reward_id === id) || {}).name || '-');
     return { multiplier: `x${p.multiplier}`, monthly_coupon: `${rw(p.reward_id)} · ยอดขั้นต่ำ ${baht(p.min_spend)}`, spend_coupon: `ครบ ${baht(p.min_bill)} ได้ ${rw(p.reward_id)}`, new_member: `${num(p.points)} แต้ม${p.reward_id ? ' + ' + rw(p.reward_id) : ''}`, birthday: rw(p.reward_id), winback: `ไม่ซื้อ ${num(p.days)} วัน ได้ ${rw(p.reward_id)}` }[c.template] || '';
   };
   return `<div class="card p-6"><h2 class="font-bold text-lg">สร้างแคมเปญใหม่</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mt-4">${Object.entries(TEMPLATES).map(([k, [t, d, ic]]) => `<button onclick="editCampaign(${reg({ template: k })})" class="text-left rounded-2xl border border-slate-100 p-4 hover:border-mint-500 hover:bg-mint-50/40 flex gap-3">
-      <span class="w-11 h-11 shrink-0 rounded-xl bg-mint-50 text-mint-600 grid place-items-center">${icon(ic)}</span><span><b>${t}</b><span class="block text-xs text-slate-400 mt-0.5">${d}</span></span></button>`).join('')}</div></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mt-4">${Object.entries(TEMPLATES).map(([k, [t, d, ic]]) => `<button onclick="editCampaign(${reg({ template: k })})" class="text-left rounded-2xl border border-slate-100 p-4 hover:border-brand-500 hover:bg-brand-50/40 flex gap-3">
+      <span class="w-11 h-11 shrink-0 rounded-xl bg-brand-50 text-brand-600 grid place-items-center">${icon(ic)}</span><span><b>${t}</b><span class="block text-xs text-slate-400 mt-0.5">${d}</span></span></button>`).join('')}</div></div>
   <div class="card p-6 mt-4"><h2 class="font-bold text-lg">แคมเปญทั้งหมด</h2>
     ${list.length ? `<div class="mt-3 divide-y divide-slate-100">${list.map(c => { const [s, cls] = status(c); return `<div class="flex flex-wrap items-center gap-3 py-3.5">
-      <span class="w-10 h-10 rounded-xl bg-mint-50 text-mint-600 grid place-items-center">${icon((TEMPLATES[c.template] || [])[2] || 'mega')}</span>
+      <span class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 grid place-items-center">${icon((TEMPLATES[c.template] || [])[2] || 'mega')}</span>
       <div class="flex-1 min-w-[200px]"><p class="font-semibold">${esc((TEMPLATES[c.template] || [c.template])[0])} <span class="ml-1 text-xs px-2 py-0.5 rounded-full ${cls}">${s}</span></p><p class="text-xs text-slate-400">${summary(c)} · ${date(c.start_at)} – ${date(c.end_at)}</p></div>
       ${toggle(c.active === 'TRUE', `saveCampaign(${reg({ ...c, active: c.active === 'TRUE' ? 'FALSE' : 'TRUE' })})`)}
       <button class="${btnG}" onclick="editCampaign(${reg(c)})">${icon('edit', 'w-4 h-4')} แก้ไข</button></div>`; }).join('')}</div>` : '<p class="text-slate-400 text-sm mt-3">ยังไม่มีแคมเปญ</p>'}</div>`;
@@ -464,21 +464,21 @@ P.settings = async () => {
   A.editTiers = tiers.map(t => ({ ...t })).sort((a, b) => a.min_spend - b.min_spend);
   return `<div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
     ${s ? `<div class="card p-6"><h2 class="font-bold text-lg">แต้ม · ${esc(s.name)}</h2>
-      <div class="mt-4 grid grid-cols-2 gap-4"><div class="rounded-2xl bg-mint-50 p-4"><p class="text-sm text-slate-500">อัตราแต้ม</p><p class="text-xl font-bold mt-1">ทุก ${num(s.baht_per_point)} บาท = 1 แต้ม</p></div>
-      <div class="rounded-2xl bg-mint-50 p-4"><p class="text-sm text-slate-500">อายุแต้ม</p><p class="text-xl font-bold mt-1">${num(s.point_expiry_days)} วัน</p></div></div>
+      <div class="mt-4 grid grid-cols-2 gap-4"><div class="rounded-2xl bg-brand-50 p-4"><p class="text-sm text-slate-500">อัตราแต้ม</p><p class="text-xl font-bold mt-1">ทุก ${num(s.baht_per_point)} บาท = 1 แต้ม</p></div>
+      <div class="rounded-2xl bg-brand-50 p-4"><p class="text-sm text-slate-500">อายุแต้ม</p><p class="text-xl font-bold mt-1">${num(s.point_expiry_days)} วัน</p></div></div>
       <button class="${btnS} mt-4" onclick="editShop(${reg(s)})">${icon('edit', 'w-4 h-4')} แก้ไข</button></div>
 
     <div class="card p-6"><h2 class="font-bold text-lg">ระดับสมาชิก · ${esc(s.name)}</h2><p class="text-sm text-slate-400">คิดจากยอดซื้อ 12 เดือนล่าสุด · ต้องมีระดับที่เกณฑ์ 0 บาท</p>
       <div id="tiers" class="mt-4 space-y-2">${tierRows()}</div>
-      <div class="mt-4 flex gap-2"><button class="${btnG} text-mint-700" onclick="A.editTiers.push({name:'',min_spend:'',multiplier:1});document.getElementById('tiers').innerHTML=tierRows()">${icon('plus', 'w-4 h-4')} เพิ่มระดับ</button>
+      <div class="mt-4 flex gap-2"><button class="${btnG} text-brand-700" onclick="A.editTiers.push({name:'',min_spend:'',multiplier:1});document.getElementById('tiers').innerHTML=tierRows()">${icon('plus', 'w-4 h-4')} เพิ่มระดับ</button>
       <button class="${btnP} ml-auto" onclick="saveTiers(this)">บันทึกระดับ</button></div></div>` : ''}
 
     <div class="card p-6 xl:col-span-2"><div class="flex flex-wrap items-center gap-3"><h2 class="font-bold text-lg flex-1">ผู้ดูแลระบบ</h2>
-      ${me.hasLine ? '<span class="text-sm text-mint-600">LINE ของคุณผูกแล้ว</span>' : `<button class="${btnS}" onclick="startLine('link')">${icon('link', 'w-4 h-4')} ผูก LINE ของฉัน</button>`}
+      ${me.hasLine ? '<span class="text-sm text-emerald-600">LINE ของคุณผูกแล้ว</span>' : `<button class="${btnS}" onclick="startLine('link')">${icon('link', 'w-4 h-4')} ผูก LINE ของฉัน</button>`}
       <button class="${btnP}" onclick="editAdmin()">${icon('plus')} เพิ่มผู้ดูแล</button></div>
       <div class="mt-3 divide-y divide-slate-100">${admins.map(a => `<div class="flex flex-wrap items-center gap-3 py-3">
-        <div class="w-10 h-10 rounded-full bg-mint-100 text-mint-700 grid place-items-center font-bold">${esc(a.name.slice(0, 1))}</div>
-        <div class="flex-1 min-w-[160px]"><p class="font-semibold">${esc(a.name)} ${a.admin_id === me.admin_id ? '<span class="text-xs text-slate-400">(คุณ)</span>' : ''}</p><p class="text-xs text-slate-400">${esc(a.username)} · ${a.hasLine ? '<span class="text-mint-600">ผูก LINE แล้ว</span>' : 'ยังไม่ผูก LINE'}</p></div>
+        <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-700 grid place-items-center font-bold">${esc(a.name.slice(0, 1))}</div>
+        <div class="flex-1 min-w-[160px]"><p class="font-semibold">${esc(a.name)} ${a.admin_id === me.admin_id ? '<span class="text-xs text-slate-400">(คุณ)</span>' : ''}</p><p class="text-xs text-slate-400">${esc(a.username)} · ${a.hasLine ? '<span class="text-brand-600">ผูก LINE แล้ว</span>' : 'ยังไม่ผูก LINE'}</p></div>
         ${a.hasLine ? `<button class="${btnG}" onclick="unlinkAdminLine(${reg(a)})">ยกเลิก LINE</button>` : ''}
         <button class="${btnG}" onclick="editAdmin(${reg(a)})">${icon('edit', 'w-4 h-4')} แก้ไข</button>
         ${a.admin_id !== me.admin_id ? `<button class="${btnG} text-rose-500" onclick="deleteAdmin(${reg(a)})">${icon('trash', 'w-4 h-4')}</button>` : ''}</div>`).join('')}</div></div>
@@ -516,7 +516,7 @@ P.coupon = async (code) => {
   if (!c.found) return `<div class="card p-6">${form}${box('bg-rose-50 text-rose-700', 'ไม่พบรหัสนี้ในระบบ', 'อาจพิมพ์ผิด หรือเป็นคูปองปลอม อย่าให้ส่วนลด')}</div>`;
   const status = c.status === 'confirmed' ? box('bg-rose-50 text-rose-700', 'ใช้ไปแล้ว ห้ามให้ส่วนลดซ้ำ', `ยืนยันเมื่อ ${dt(c.confirmed_at || c.used_at)}${c.confirmed_by ? ' โดย ' + esc(c.confirmed_by) : ''}`)
     : c.expired ? box('bg-slate-100 text-slate-600', 'คูปองหมดอายุแล้ว', 'หมดอายุ ' + date(c.expires_at))
-    : box('bg-mint-50 text-mint-700', 'ใช้ได้ ✓', c.status === 'used' ? `ลูกค้ากดใช้เมื่อ ${dt(c.used_at)}` : 'ลูกค้ายังไม่ได้กดใช้ในแอป แต่คูปองยังใช้ได้');
+    : box('bg-emerald-50 text-emerald-700', 'ใช้ได้ ✓', c.status === 'used' ? `ลูกค้ากดใช้เมื่อ ${dt(c.used_at)}` : 'ลูกค้ายังไม่ได้กดใช้ในแอป แต่คูปองยังใช้ได้');
   const row = (k, v) => `<div class="flex justify-between gap-4 py-2.5"><span class="text-slate-500">${k}</span><span class="font-semibold text-right">${v}</span></div>`;
   return `<div class="card p-6">${form}${status}
     <div class="mt-4 max-w-md divide-y divide-slate-100 text-sm">
@@ -543,7 +543,7 @@ P.audit = async () => {
 function loginView(err) {
   app.innerHTML = `<div class="min-h-screen grid place-items-center p-4">
     <div class="card w-full max-w-sm p-8">
-      <div class="w-14 h-14 rounded-2xl bg-mint-500 text-white grid place-items-center mx-auto">${icon('store', 'w-7 h-7')}</div>
+      <div class="w-14 h-14 rounded-2xl bg-brand-500 text-white grid place-items-center mx-auto">${icon('store', 'w-7 h-7')}</div>
       <h1 class="text-2xl font-extrabold text-center mt-4">Member Club</h1><p class="text-center text-sm text-slate-400">เข้าสู่ระบบหลังบ้าน</p>
       ${err ? `<p class="mt-5 rounded-xl bg-rose-50 text-rose-600 text-sm px-4 py-3">${esc(err)}</p>` : ''}
       <button onclick="startLine('login')" class="mt-6 w-full h-12 rounded-xl bg-[#06C755] hover:brightness-95 text-white font-semibold flex items-center justify-center gap-2"><span class="bg-white text-[#06C755] text-[10px] font-extrabold rounded px-1">LINE</span> เข้าสู่ระบบด้วย LINE</button>
