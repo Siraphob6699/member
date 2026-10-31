@@ -94,12 +94,18 @@ function toast(msg, bad) {
 async function copy(text) { await navigator.clipboard.writeText(text); toast('คัดลอกแล้ว'); }
 
 // ---------- api ----------
+// Read results are kept so a page can show its last data instantly while fresh data loads (each server call takes seconds).
+const READS = ['shops', 'dashboard', 'customers', 'customer', 'rewards', 'tiers', 'campaigns', 'audit'];
+let CACHED_ONLY = false;
 async function api(action, extra = {}) {
+  const key = 'crm_c:' + action + JSON.stringify(extra);
+  if (CACHED_ONLY) { const c = localStorage.getItem(key); if (c === null) throw new Error('not cached'); return JSON.parse(c); }
   if (DEMO) return demo(action, extra);
   const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ admin: true, action, token: A.token, ...extra }) });
   const j = await r.json();
   if (j && j.relogin) { logout(); throw new Error(j.error); }
   if (j && j.error) throw new Error(j.error);
+  if (READS.includes(action) && !extra.q) try { localStorage.setItem(key, JSON.stringify(j)); } catch (e) { /* storage full: just no instant view */ }
   return j;
 }
 
@@ -176,15 +182,27 @@ function shell() {
 
 function nav(page, arg) { A.page = page; A.arg = arg; A.menu = false; shell(); paint(); window.scrollTo(0, 0); }
 function setShop(id) { A.shopId = id; localStorage.setItem('crm_shop', id); paint(); }
+let paintSeq = 0;
 async function paint() {
-  const el = document.getElementById('page');
+  const el = document.getElementById('page'), seq = ++paintSeq;
   R.length = 0;
   el.innerHTML = `<div class="card p-16 grid place-items-center"><div class="w-9 h-9 rounded-full border-4 border-mint-100 border-t-mint-500 animate-spin"></div></div>`;
   if (!A.shopId && !['shops', 'settings', 'audit'].includes(A.page)) {
     el.innerHTML = `<div class="card p-12 text-center"><p class="text-lg font-bold">ยังไม่มีร้าน</p><p class="text-slate-400 mt-1">เริ่มจากสร้างร้านและผูก LINE OA</p><button class="${btnP} mt-5" onclick="nav('shops')">ไปที่หน้าร้าน</button></div>`;
     return;
   }
-  try { el.innerHTML = await P[A.page](A.arg); } catch (e) { el.innerHTML = `<div class="card p-10 text-center text-rose-600">${esc(e.message)}</div>`; }
+  // Last data first (settings keeps edit state while rendering, so it always waits for fresh data).
+  const same = h => h.replace(/R\[\d+\]/g, 'R');
+  let stale = '';
+  if (A.page !== 'settings') {
+    CACHED_ONLY = true;
+    try { stale = await P[A.page](A.arg); el.innerHTML = stale; } catch (e) { /* nothing cached yet */ } finally { CACHED_ONLY = false; }
+  }
+  try {
+    const html = await P[A.page](A.arg);
+    // Unchanged data keeps the shown page, so nothing flickers and typed text survives.
+    if (seq === paintSeq && same(html) !== same(stale)) el.innerHTML = html;
+  } catch (e) { if (seq === paintSeq) el.innerHTML = `<div class="card p-10 text-center text-rose-600">${esc(e.message)}</div>`; }
 }
 const refresh = () => paint();
 
@@ -552,17 +570,23 @@ function done(r) {
 
 function logout() {
   localStorage.removeItem('crm_token'); A.token = null;
+  Object.keys(localStorage).filter(k => k.startsWith('crm_c:')).forEach(k => localStorage.removeItem(k));
   if (A.liffReady && liff.isLoggedIn()) liff.logout();
   loginView();
 }
 
 async function boot() {
   if (!A.token) return loginView();
-  try {
-    const d = await api('shops');
+  const show = d => {
     Object.assign(A, { shops: d.shops, oas: d.oas, webhookBase: d.webhookBase });
     if (!A.shops.some(s => s.shop_id === A.shopId)) A.shopId = (A.shops[0] || {}).shop_id || null;
     shell(); paint();
+  };
+  const cached = localStorage.getItem('crm_c:shops{}');
+  if (cached) show(JSON.parse(cached));
+  try {
+    const d = await api('shops');
+    if (JSON.stringify(d) !== cached) show(d);
   } catch (e) { loginView(e.message); }
 }
 
