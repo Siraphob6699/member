@@ -11,17 +11,19 @@
   <script>
     tailwind.config = { theme: { extend: {
       fontFamily: { thai: ['"Noto Sans Thai"', 'sans-serif'] },
-      colors: { mint: { 50: '#EEF9F3', 100: '#D8F2E4', 500: '#2DB674', 600: '#22A065', 700: '#17804F' } },
-      boxShadow: { soft: '0 6px 24px -8px rgba(23,128,79,.18)' },
+      colors: { brand: { 50: '#FDECEC', 100: '#FAD4D3', 500: '#E53935', 600: '#C62828', 700: '#B71C1C' } },
+      boxShadow: { soft: '0 6px 24px -8px rgba(0,0,0,.18)', card: '0 14px 34px -12px rgba(0,0,0,.35)' },
     } } };
   </script>
   <style>
     body { -webkit-tap-highlight-color: transparent; }
+    /* brushed-metal sheen over the tier card */
+    .sheen { background: repeating-linear-gradient(100deg, rgba(255,255,255,.0) 0 6px, rgba(255,255,255,.18) 7px, rgba(255,255,255,0) 9px), linear-gradient(115deg, transparent 30%, rgba(255,255,255,.45) 45%, transparent 60%); }
     .ticket { -webkit-mask: radial-gradient(circle 10px at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 10px at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat; }
   </style>
 </head>
-<body class="font-thai bg-mint-50/60 text-slate-800">
-<div id="app" class="max-w-md mx-auto min-h-screen bg-white"></div>
+<body class="font-thai bg-neutral-100 text-neutral-900">
+<div id="app" class="max-w-md mx-auto min-h-screen bg-neutral-50"></div>
 
 <script>
 // shortcut: paste the Apps Script web app URL here; leave empty (or open with ?demo=1) to preview with sample data.
@@ -53,7 +55,7 @@ const I = {
   history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
-  crown: '<path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 12H5z"/>',
+  coins: '<ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v4c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M9 14v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4c0-1.7-2.7-3-6-3"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   chev: '<path d="M9 6l6 6-6 6"/>',
   truck: '<path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
@@ -63,10 +65,12 @@ const I = {
 const icon = (n, c = 'w-5 h-5') => `<svg class="${c}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`;
 const coin = '<span class="inline-block w-4 h-4 rounded-full bg-gradient-to-b from-amber-300 to-amber-500 ring-2 ring-amber-200 align-[-2px]"></span>';
 
+// Card material follows the tier, independent of the page theme; unknown tier names use the Member card.
 const TIER_CARD = {
-  Gold: 'from-[#F8E7B5] via-[#EBCB7A] to-[#D9AE52] text-amber-950',
-  Silver: 'from-slate-100 via-slate-200 to-slate-300 text-slate-800',
-  Member: 'from-mint-100 via-mint-100 to-[#BFE9D3] text-mint-700',
+  Member: 'from-white via-slate-50 to-slate-200 text-neutral-900',
+  Silver: 'from-slate-100 via-slate-300 to-slate-400 text-neutral-900',
+  Gold: 'from-[#F7E6AE] via-[#E3BE62] to-[#C8963A] text-amber-950',
+  Black: 'from-neutral-600 via-neutral-900 to-black text-white',
 };
 const typeIcon = t => t === 'shipping' ? 'truck' : t === 'gift' ? 'gift' : 'pct';
 const rewardLine = r => r.type === 'baht' ? `ลด ${num(r.value)} บาท` : r.type === 'percent' ? `ลด ${r.value}%` : r.type === 'shipping' ? 'ส่งฟรี' : (r.value || 'ของแถม');
@@ -79,7 +83,7 @@ function header(title, { back = true } = {}) {
     <button class="w-9 h-9 grid place-items-center" onclick="closeApp()" aria-label="ปิด">${icon('close', 'w-6 h-6')}</button>
   </div>`;
 }
-const btn = (label, on, extra = '') => `<button onclick="${on}" class="w-full h-12 rounded-2xl bg-mint-500 active:bg-mint-600 text-white font-semibold shadow-soft disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none ${extra}">${label}</button>`;
+const btn = (label, on, extra = '') => `<button onclick="${on}" class="w-full h-12 rounded-2xl bg-brand-500 active:bg-brand-600 text-white font-semibold shadow-soft disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none ${extra}">${label}</button>`;
 
 // ---------- api ----------
 async function api(action, extra = {}) {
@@ -106,21 +110,21 @@ function toast(msg) {
 // ---------- views ----------
 const V = {};
 
-V.loading = () => `<div class="min-h-screen grid place-items-center"><div class="w-10 h-10 rounded-full border-4 border-mint-100 border-t-mint-500 animate-spin"></div></div>`;
+V.loading = () => `<div class="min-h-screen grid place-items-center"><div class="w-10 h-10 rounded-full border-4 border-brand-100 border-t-brand-500 animate-spin"></div></div>`;
 
 V.bind = (err) => `${header('ลงทะเบียนสมาชิก', { back: false })}
   <div class="px-6 pt-4 pb-10">
-    <div class="w-16 h-16 rounded-2xl bg-mint-50 text-mint-500 grid place-items-center mx-auto">${icon('crown', 'w-8 h-8')}</div>
+    <div class="w-16 h-16 rounded-2xl bg-brand-50 text-brand-500 grid place-items-center mx-auto">${icon('gift', 'w-8 h-8')}</div>
     <h2 class="text-center text-xl font-bold mt-4">สมัครสมาชิกสะสมแต้ม</h2>
     <p class="text-center text-slate-500 text-sm mt-1">ใส่เบอร์โทรที่ใช้สั่งซื้อ ครั้งเดียว ใช้ได้ตลอด</p>
     ${err ? `<div class="mt-6 rounded-2xl bg-rose-50 text-rose-600 text-sm px-4 py-3">${esc(err)}</div>` : ''}
     <label class="block mt-6 text-sm font-semibold">เบอร์โทรศัพท์</label>
-    <input id="phone" type="tel" inputmode="numeric" maxlength="12" placeholder="08x-xxx-xxxx" class="mt-2 w-full h-12 rounded-2xl border border-slate-200 px-4 text-lg tracking-wide focus:outline-none focus:border-mint-500 focus:ring-4 focus:ring-mint-100">
+    <input id="phone" type="tel" inputmode="numeric" maxlength="12" placeholder="08x-xxx-xxxx" class="mt-2 w-full h-12 rounded-2xl border border-slate-200 px-4 text-lg tracking-wide focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
     <label class="block mt-5 text-sm font-semibold">วันเกิด <span class="text-slate-400 font-normal">(ไม่บังคับ · รับคูปองเดือนเกิด)</span></label>
-    <input id="bday" type="date" class="mt-2 w-full h-12 rounded-2xl border border-slate-200 px-4 focus:outline-none focus:border-mint-500 focus:ring-4 focus:ring-mint-100">
+    <input id="bday" type="date" class="mt-2 w-full h-12 rounded-2xl border border-slate-200 px-4 focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100">
     <label class="flex gap-3 items-start mt-6 text-sm text-slate-600">
-      <input id="consent" type="checkbox" class="mt-0.5 w-5 h-5 accent-[#2DB674]">
-      <span>ยอมรับ <button type="button" class="text-mint-600 font-semibold underline" onclick="document.getElementById('policy').classList.toggle('hidden')">นโยบายความเป็นส่วนตัว</button> ให้ร้านเก็บเบอร์โทรและประวัติการซื้อเพื่อสะสมแต้มและส่งสิทธิพิเศษ</span>
+      <input id="consent" type="checkbox" class="mt-0.5 w-5 h-5 accent-[#E53935]">
+      <span>ยอมรับ <button type="button" class="text-brand-600 font-semibold underline" onclick="document.getElementById('policy').classList.toggle('hidden')">นโยบายความเป็นส่วนตัว</button> ให้ร้านเก็บเบอร์โทรและประวัติการซื้อเพื่อสะสมแต้มและส่งสิทธิพิเศษ</span>
     </label>
     <p id="policy" class="hidden mt-3 text-xs text-slate-500 bg-slate-50 rounded-xl p-3">ร้านเก็บเบอร์โทร วันเกิด LINE ID และประวัติการซื้อ เพื่อคำนวณแต้ม ออกคูปอง และแจ้งสิทธิพิเศษเท่านั้น ไม่เปิดเผยต่อบุคคลอื่น ขอลบข้อมูลได้โดยทักแอดมินในแชต</p>
     <div class="mt-8">${btn('ยืนยัน', 'doBind(this)')}</div>
@@ -130,40 +134,48 @@ V.home = () => {
   const m = S.me;
   const target = m.nextTier ? m.spend12m + m.nextTier.need : 0;
   const pct = target ? Math.min(100, Math.round((m.spend12m / target) * 100)) : 100;
-  const menu = [['gift', 'ของรางวัล', 'แลกของพิเศษ', 'rewards'], ['ticket', 'คูปองของฉัน', 'ดูคูปองทั้งหมด', 'coupons'], ['history', 'ประวัติแต้ม', 'ดูรายการย้อนหลัง', 'history']];
-  return `${header('บัตรสมาชิก', { back: false })}
-  <div class="px-5 pb-10">
-    <div class="flex items-center gap-3 mt-2">
-      ${m.picture ? `<img src="${esc(m.picture)}" class="w-14 h-14 rounded-full object-cover" alt="">` : `<div class="w-14 h-14 rounded-full bg-mint-100"></div>`}
-      <div><p class="text-sm text-slate-500">สวัสดีค่ะ</p><p class="text-lg font-bold flex items-center gap-1.5">${esc(m.name)} <span class="w-5 h-5 rounded-full bg-[#06C755] text-white grid place-items-center">${icon('check', 'w-3 h-3')}</span></p></div>
-    </div>
-    <button onclick="go('history')" class="relative overflow-hidden block w-full text-left mt-5 rounded-3xl p-5 bg-gradient-to-br ${TIER_CARD[m.tier] || TIER_CARD.Member} shadow-soft">
-      <div class="absolute -right-4 -top-2 opacity-25">${icon('crown', 'w-32 h-32')}</div>
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-full bg-white/50 grid place-items-center">${icon('crown', 'w-6 h-6')}</div>
-        <div><p class="text-xs opacity-70">ระดับสมาชิก</p><p class="text-2xl font-extrabold leading-tight">${esc(m.tier)}</p></div>
+  const dark = m.tier === 'Black';
+  const ready = S.coupons.filter(c => couponState(c) === 'ready').length;
+  const menu = [['gift', 'แลกรางวัล', 'rewards'], ['ticket', `คูปองของฉัน${ready ? ` (${ready})` : ''}`, 'coupons'], ['history', 'ประวัติแต้ม', 'history']];
+  const picks = S.rewards.slice(0, 3);
+  return `<div class="bg-neutral-950 text-white rounded-b-[36px] pb-28">
+    <div class="flex items-center justify-between px-4 h-14">
+      <span class="w-9"></span><h1 class="text-[17px] font-bold">บัตรสมาชิก</h1>
+      <button class="w-9 h-9 grid place-items-center" onclick="closeApp()" aria-label="ปิด">${icon('close', 'w-6 h-6')}</button>
+    </div></div>
+  <div class="px-5 pb-10 -mt-24">
+    <button onclick="go('history')" class="relative overflow-hidden block w-full text-left rounded-3xl p-5 bg-gradient-to-br ${TIER_CARD[m.tier] || TIER_CARD.Member} shadow-card ring-1 ${dark ? 'ring-white/10' : 'ring-black/5'}">
+      <div class="sheen absolute inset-0 pointer-events-none ${dark ? 'opacity-30' : 'opacity-70'}"></div>
+      <div class="relative">
+        <div class="flex items-center gap-3">
+          ${m.picture ? `<img src="${esc(m.picture)}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white" alt="">` : `<div class="w-14 h-14 rounded-full bg-white/60 ring-2 ring-white"></div>`}
+          <div class="min-w-0"><p class="text-lg font-bold truncate">${esc(m.name)}</p>
+            <span class="inline-block mt-0.5 text-xs font-semibold px-3 py-0.5 rounded-full ${dark ? 'bg-white/15' : 'bg-white/70'}">${esc(m.tier)}</span></div>
+        </div>
+        <p class="mt-5 text-[34px] font-extrabold leading-none flex items-center gap-2"><span class="${dark ? 'text-brand-500' : 'text-brand-600'}">${icon('coins', 'w-8 h-8')}</span>${num(m.points)} <span class="text-lg font-bold">แต้ม</span></p>
+        ${m.expiring ? `<p class="text-xs mt-2 opacity-75">${num(m.expiring.points)} แต้มจะหมดอายุ ${date(m.expiring.at)}</p>` : ''}
+        <div class="border-t ${dark ? 'border-white/15' : 'border-black/10'} mt-4 pt-3">
+          ${m.nextTier ? `<p class="text-sm font-semibold">ซื้ออีก ฿${num(m.nextTier.need)} เพื่อเป็น ${esc(m.nextTier.name)}</p>
+          <div class="mt-2 h-2.5 rounded-full ${dark ? 'bg-white/15' : 'bg-black/10'} overflow-hidden"><div class="h-full rounded-full bg-brand-500" style="width:${pct}%"></div></div>`
+          : `<p class="text-sm font-semibold">คุณอยู่ระดับสูงสุดแล้ว</p>`}
+        </div>
       </div>
-      <div class="flex items-end justify-between mt-5">
-        <p class="text-[32px] font-extrabold leading-none">${coin} ${num(m.points)} <span class="text-lg font-bold">แต้ม</span></p>
-        <span class="w-7 h-7 rounded-full bg-white/70 grid place-items-center">${icon('chev', 'w-4 h-4')}</span>
-      </div>
-      ${m.expiring ? `<p class="text-xs mt-3 opacity-80 flex items-center gap-1.5">${icon('clock', 'w-4 h-4')} ${num(m.expiring.points)} แต้มจะหมดอายุ ${date(m.expiring.at)}</p>` : ''}
     </button>
-    ${m.nextTier ? `<div class="mt-5">
-      <p class="text-sm font-semibold">ซื้ออีก ${num(m.nextTier.need)} บาท เป็น ${esc(m.nextTier.name)}</p>
-      <div class="mt-2 h-2.5 rounded-full bg-mint-50 overflow-hidden"><div class="h-full rounded-full bg-mint-500" style="width:${pct}%"></div></div>
-      <p class="text-xs text-slate-400 mt-1.5">${num(m.spend12m)} / ${num(target)} บาท (12 เดือนล่าสุด)</p>
-    </div>` : `<p class="mt-5 text-sm font-semibold text-mint-700">คุณอยู่ระดับสูงสุดแล้ว</p>`}
-    <div class="grid grid-cols-3 gap-3 mt-6">
-      ${menu.map(([ic, t, s, v]) => `<button onclick="go('${v}')" class="rounded-2xl border border-slate-100 shadow-sm py-4 px-2 text-center active:bg-mint-50">
-        <span class="text-mint-500 inline-block">${icon(ic, 'w-7 h-7')}</span>
-        <p class="text-sm font-semibold mt-1.5">${t}</p><p class="text-[11px] text-slate-400">${s}</p></button>`).join('')}
+    <div class="grid grid-cols-3 gap-3 mt-5">
+      ${menu.map(([ic, t, v]) => `<button onclick="go('${v}')" class="rounded-2xl bg-white border border-neutral-200 shadow-sm py-4 px-1 text-center active:bg-brand-50">
+        <span class="text-brand-500 inline-block">${icon(ic, 'w-7 h-7')}</span>
+        <p class="text-[13px] font-semibold mt-1.5">${t}</p></button>`).join('')}
     </div>
-    <div class="mt-6 rounded-3xl bg-gradient-to-br from-mint-50 to-mint-100 p-5 relative overflow-hidden">
-      <p class="text-lg font-bold text-mint-700 leading-snug">สะสมแต้ม<br>แลกรางวัลสุดพิเศษ</p>
-      <p class="text-xs text-slate-500 mt-1">ทุกการสั่งซื้อได้แต้มอัตโนมัติ</p>
-      <div class="absolute right-4 bottom-3 text-mint-500 opacity-80">${icon('gift', 'w-16 h-16')}</div>
-    </div>
+    ${picks.length ? `<div class="flex items-center justify-between mt-7">
+      <h2 class="text-lg font-bold border-l-4 border-brand-500 pl-3 leading-tight">รางวัลแนะนำ</h2>
+      <button onclick="go('rewards')" class="text-sm text-brand-600 font-semibold">ดูทั้งหมด</button></div>
+    <div class="mt-3 space-y-3">${picks.map(r => {
+      const short = Number(r.points_cost) > m.points;
+      return `<div class="flex items-center gap-3 rounded-2xl bg-white border border-neutral-200 shadow-sm p-3">
+        <div class="w-12 h-12 shrink-0 rounded-xl bg-brand-50 text-brand-500 grid place-items-center overflow-hidden">${r.image_url ? `<img src="${esc(r.image_url)}" class="w-full h-full object-cover" alt="">` : icon(typeIcon(r.type), 'w-6 h-6')}</div>
+        <div class="flex-1 min-w-0"><p class="font-bold truncate">${esc(r.name)}</p><p class="text-xs text-neutral-500">${Number(r.points_cost) ? `${num(r.points_cost)} แต้ม` : 'ฟรี'}</p></div>
+        <button ${short ? 'disabled' : ''} onclick="go('confirm','${esc(r.reward_id)}')" class="h-9 px-5 rounded-full bg-brand-500 text-white text-sm font-semibold disabled:bg-neutral-100 disabled:text-neutral-400">${short ? 'แต้มไม่พอ' : 'แลก'}</button>
+      </div>`; }).join('')}</div>` : ''}
   </div>`;
 };
 
@@ -174,20 +186,20 @@ V.rewards = (tab = 'all') => {
   return `${header('ของรางวัล')}
   <div class="px-5 pb-10">
     <p class="text-sm text-slate-500">แต้มของคุณ <b class="text-slate-800">${coin} ${num(S.me.points)}</b></p>
-    <div class="flex gap-2 mt-3 overflow-x-auto">${tabs.map(([k, t]) => `<button onclick="S.stack[S.stack.length-1][1]='${k}';render()" class="shrink-0 px-4 h-9 rounded-full text-sm ${k === tab ? 'bg-mint-100 text-mint-700 font-semibold' : 'border border-slate-200 text-slate-500'}">${t}</button>`).join('')}</div>
+    <div class="flex gap-2 mt-3 overflow-x-auto">${tabs.map(([k, t]) => `<button onclick="S.stack[S.stack.length-1][1]='${k}';render()" class="shrink-0 px-4 h-9 rounded-full text-sm ${k === tab ? 'bg-brand-100 text-brand-700 font-semibold' : 'border border-slate-200 text-slate-500'}">${t}</button>`).join('')}</div>
     <div class="mt-4 space-y-3">
     ${list.length ? list.map(r => {
       const short = Number(r.points_cost) > S.me.points, out = r.stock !== '' && Number(r.stock) <= 0;
       return `<div class="flex gap-4 rounded-3xl border border-slate-100 shadow-sm p-3">
-        <div class="relative w-28 h-28 shrink-0 rounded-2xl bg-mint-50 overflow-hidden grid place-items-center text-mint-500">
+        <div class="relative w-28 h-28 shrink-0 rounded-2xl bg-brand-50 overflow-hidden grid place-items-center text-brand-500">
           ${r.image_url ? `<img src="${esc(r.image_url)}" class="w-full h-full object-cover" alt="">` : icon(typeIcon(r.type), 'w-10 h-10')}
           ${r.min_tier ? `<span class="absolute top-1.5 left-1.5 text-[10px] font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">เฉพาะ ${esc(r.min_tier)}</span>` : ''}
         </div>
         <div class="flex-1 min-w-0 flex flex-col">
           <p class="font-bold leading-snug">${esc(r.name)}</p>
           <p class="text-xs text-slate-500 mt-0.5">${esc(rewardLine(r))}${r.stock !== '' ? ` · เหลือ ${num(r.stock)} ชิ้น` : ''}</p>
-          <p class="font-semibold mt-1.5">${Number(r.points_cost) ? `${coin} ${num(r.points_cost)} แต้ม` : '<span class="text-mint-600">ฟรี</span>'}</p>
-          <button ${short || out ? 'disabled' : ''} onclick="go('confirm','${esc(r.reward_id)}')" class="mt-auto h-9 rounded-full bg-mint-500 text-white text-sm font-semibold disabled:bg-slate-100 disabled:text-slate-400">${out ? 'หมดแล้ว' : short ? 'แต้มไม่พอ' : 'แลกรางวัล'}</button>
+          <p class="font-semibold mt-1.5">${Number(r.points_cost) ? `${coin} ${num(r.points_cost)} แต้ม` : '<span class="text-brand-600">ฟรี</span>'}</p>
+          <button ${short || out ? 'disabled' : ''} onclick="go('confirm','${esc(r.reward_id)}')" class="mt-auto h-9 rounded-full bg-brand-500 text-white text-sm font-semibold disabled:bg-slate-100 disabled:text-slate-400">${out ? 'หมดแล้ว' : short ? 'แต้มไม่พอ' : 'แลกรางวัล'}</button>
         </div></div>`;
     }).join('') : `<p class="text-center text-slate-400 py-16">ยังไม่มีรางวัลในหมวดนี้</p>`}
     </div></div>`;
@@ -197,13 +209,13 @@ V.confirm = (id) => {
   const r = S.rewards.find(x => x.reward_id === id), cost = Number(r.points_cost || 0);
   return `${header('ยืนยันการแลก')}
   <div class="px-5 pb-10">
-    <div class="rounded-3xl bg-mint-50 aspect-[4/3] overflow-hidden grid place-items-center text-mint-500">${r.image_url ? `<img src="${esc(r.image_url)}" class="w-full h-full object-cover" alt="">` : icon(typeIcon(r.type), 'w-20 h-20')}</div>
+    <div class="rounded-3xl bg-brand-50 aspect-[4/3] overflow-hidden grid place-items-center text-brand-500">${r.image_url ? `<img src="${esc(r.image_url)}" class="w-full h-full object-cover" alt="">` : icon(typeIcon(r.type), 'w-20 h-20')}</div>
     <h2 class="text-xl font-bold mt-5">${esc(r.name)}</h2>
     <p class="text-slate-500 text-sm mt-1">${esc(rewardLine(r))} · ใช้ได้ ${num(r.valid_days || 30)} วันหลังแลก</p>
     <div class="mt-5 rounded-2xl border border-slate-100 divide-y divide-slate-100 text-sm">
       <div class="flex justify-between p-4"><span class="text-slate-500">แต้มปัจจุบัน</span><b>${num(S.me.points)}</b></div>
       <div class="flex justify-between p-4"><span class="text-slate-500">ใช้แลก</span><b class="text-rose-500">-${num(cost)}</b></div>
-      <div class="flex justify-between p-4"><span class="text-slate-500">คงเหลือหลังแลก</span><b class="text-mint-700">${num(S.me.points - cost)}</b></div>
+      <div class="flex justify-between p-4"><span class="text-slate-500">คงเหลือหลังแลก</span><b class="text-brand-700">${num(S.me.points - cost)}</b></div>
     </div>
     <div class="mt-8">${btn('ยืนยันการแลก', `doRedeem(this,'${esc(id)}')`)}</div>
   </div>`;
@@ -211,8 +223,8 @@ V.confirm = (id) => {
 
 V.redeemed = (c) => `${header('แลกสำเร็จ', { back: false })}
   <div class="px-6 pt-6 pb-10 text-center">
-    <div class="w-20 h-20 rounded-full bg-mint-500 text-white grid place-items-center mx-auto shadow-soft">${icon('check', 'w-10 h-10')}</div>
-    <h2 class="text-2xl font-bold text-mint-700 mt-5">แลกรางวัลสำเร็จ!</h2>
+    <div class="w-20 h-20 rounded-full bg-brand-500 text-white grid place-items-center mx-auto shadow-soft">${icon('check', 'w-10 h-10')}</div>
+    <h2 class="text-2xl font-bold text-brand-700 mt-5">แลกรางวัลสำเร็จ!</h2>
     <p class="text-slate-500 mt-1">${esc(c.name)} ถูกเก็บไว้ในคูปองของฉันแล้ว<br>ใช้ได้ถึง ${date(c.expires_at)}</p>
     <div class="mt-8">${btn('ไปที่คูปองของฉัน', "S.stack=[['home']];go('coupons')")}</div>
     <button onclick="S.stack=[['home']];render()" class="mt-3 h-12 w-full text-slate-500 font-semibold">กลับหน้าบัตรสมาชิก</button>
@@ -225,18 +237,18 @@ V.coupons = (tab = 'ready') => {
   const list = groups[tab];
   return `${header('คูปองของฉัน')}
   <div class="px-5 pb-10">
-    <div class="grid grid-cols-3 gap-2">${tabs.map(([k, t]) => `<button onclick="S.stack[S.stack.length-1][1]='${k}';render()" class="h-10 rounded-full text-sm ${k === tab ? 'bg-mint-100 text-mint-700 font-semibold' : 'border border-slate-200 text-slate-500'}">${t} (${groups[k].length})</button>`).join('')}</div>
+    <div class="grid grid-cols-3 gap-2">${tabs.map(([k, t]) => `<button onclick="S.stack[S.stack.length-1][1]='${k}';render()" class="h-10 rounded-full text-sm ${k === tab ? 'bg-brand-100 text-brand-700 font-semibold' : 'border border-slate-200 text-slate-500'}">${t} (${groups[k].length})</button>`).join('')}</div>
     <div class="mt-4 space-y-3">
     ${list.length ? list.map(c => `<div class="rounded-3xl border border-slate-100 shadow-sm p-4 ${tab === 'ready' ? '' : 'opacity-60'}">
         <div class="flex gap-4">
-          <div class="w-16 h-16 shrink-0 rounded-2xl bg-mint-50 text-mint-500 grid place-items-center">${icon(typeIcon(c.type), 'w-8 h-8')}</div>
+          <div class="w-16 h-16 shrink-0 rounded-2xl bg-brand-50 text-brand-500 grid place-items-center">${icon(typeIcon(c.type), 'w-8 h-8')}</div>
           <div class="min-w-0">
             <p class="font-bold text-lg leading-snug">${esc(c.name)}</p>
             <p class="text-xs text-slate-500">${esc(rewardLine(c))}</p>
             <p class="text-xs text-slate-500 mt-1.5 flex items-center gap-1">${icon('cal', 'w-3.5 h-3.5')} ${tab === 'used' ? `ใช้เมื่อ ${date(c.used_at)}` : `ใช้ได้ถึง ${date(c.expires_at)}`}</p>
           </div>
         </div>
-        ${tab === 'ready' ? `<div class="mt-4">${btn('ใช้คูปอง', `askUse('${esc(c.code)}')`, 'h-11')}</div>` : tab === 'used' ? `<button onclick="go('code','${esc(c.code)}')" class="mt-3 text-sm text-mint-600 font-semibold">ดูโค้ด</button>` : ''}
+        ${tab === 'ready' ? `<div class="mt-4">${btn('ใช้คูปอง', `askUse('${esc(c.code)}')`, 'h-11')}</div>` : tab === 'used' ? `<button onclick="go('code','${esc(c.code)}')" class="mt-3 text-sm text-brand-600 font-semibold">ดูโค้ด</button>` : ''}
       </div>`).join('') : `<p class="text-center text-slate-400 py-16">ไม่มีคูปอง</p>`}
     </div></div>`;
 };
@@ -245,18 +257,18 @@ V.code = (code) => {
   const c = S.coupons.find(x => x.code === code);
   return `${header('คูปองส่วนลด')}
   <div class="px-6 pt-4 pb-10 text-center">
-    <div class="w-20 h-20 rounded-full bg-mint-500 text-white grid place-items-center mx-auto shadow-soft">${icon('check', 'w-10 h-10')}</div>
-    <h2 class="text-2xl font-bold text-mint-700 mt-4">พร้อมใช้งานแล้ว!</h2>
+    <div class="w-20 h-20 rounded-full bg-brand-500 text-white grid place-items-center mx-auto shadow-soft">${icon('check', 'w-10 h-10')}</div>
+    <h2 class="text-2xl font-bold text-brand-700 mt-4">พร้อมใช้งานแล้ว!</h2>
     <div class="ticket mt-6 rounded-3xl bg-white shadow-soft border border-slate-100 py-6 px-4">
-      <p class="text-2xl font-bold text-mint-700">${esc(c.name)}</p>
+      <p class="text-2xl font-bold text-brand-700">${esc(c.name)}</p>
       <p class="text-slate-500 text-sm mt-1">${esc(rewardLine(c))}</p>
-      <div class="border-t-2 border-dashed border-mint-100 my-5"></div>
+      <div class="border-t-2 border-dashed border-brand-100 my-5"></div>
       <p class="text-[42px] font-extrabold tracking-wider text-slate-900 leading-none">${esc(c.code.slice(0, 4))}-${esc(c.code.slice(4))}</p>
     </div>
     <p class="mt-5 inline-flex items-center gap-2 rounded-2xl border border-slate-100 px-4 py-3 text-sm text-slate-600">${icon('clock', 'w-4 h-4')} กดใช้เมื่อ ${date(c.used_at)} · ${time(c.used_at)}</p>
-    <div class="mt-5 flex items-center gap-4 text-left rounded-2xl bg-mint-50 p-4">
-      <span class="text-mint-600">${icon('phone', 'w-9 h-9')}</span>
-      <div><p class="font-bold text-mint-700">แคปหน้าจอนี้ส่งให้แอดมิน</p><p class="text-xs text-slate-500">เพื่อรับส่วนลดได้เลยค่ะ</p></div>
+    <div class="mt-5 flex items-center gap-4 text-left rounded-2xl bg-brand-50 p-4">
+      <span class="text-brand-600">${icon('phone', 'w-9 h-9')}</span>
+      <div><p class="font-bold text-brand-700">แคปหน้าจอนี้ส่งให้แอดมิน</p><p class="text-xs text-slate-500">เพื่อรับส่วนลดได้เลยค่ะ</p></div>
     </div>
   </div>`;
 };
@@ -265,14 +277,14 @@ V.history = () => {
   const label = h => h.reason === 'บิล' ? `ซื้อสินค้า บิล #${esc(h.ref)}` : esc(h.reason);
   return `${header('ประวัติแต้ม')}
   <div class="px-5 pb-10">
-    <div class="rounded-3xl bg-mint-50 p-5 flex justify-between items-center">
+    <div class="rounded-3xl bg-brand-50 p-5 flex justify-between items-center">
       <span class="text-sm text-slate-500">แต้มคงเหลือ</span><span class="text-2xl font-extrabold">${coin} ${num(S.me.points)}</span>
     </div>
     <div class="mt-4 divide-y divide-slate-100">
     ${S.history.length ? S.history.map(h => { const plus = Number(h.delta) > 0; return `<div class="flex items-center gap-3 py-4">
-        <div class="w-10 h-10 rounded-full grid place-items-center ${plus ? 'bg-mint-50 text-mint-600' : 'bg-rose-50 text-rose-500'}">${icon(plus ? 'gift' : 'ticket', 'w-5 h-5')}</div>
+        <div class="w-10 h-10 rounded-full grid place-items-center ${plus ? 'bg-emerald-50 text-emerald-600' : 'bg-neutral-100 text-neutral-500'}">${icon(plus ? 'gift' : 'ticket', 'w-5 h-5')}</div>
         <div class="flex-1 min-w-0"><p class="font-semibold truncate">${label(h)}</p><p class="text-xs text-slate-400">${date(h.created_at)} · ${time(h.created_at)}</p></div>
-        <p class="font-bold ${plus ? 'text-mint-600' : 'text-rose-500'}">${plus ? '+' : ''}${num(h.delta)}</p>
+        <p class="font-bold ${plus ? 'text-emerald-600' : 'text-neutral-500'}">${plus ? '+' : ''}${num(h.delta)}</p>
       </div>`; }).join('') : `<p class="text-center text-slate-400 py-16">ยังไม่มีรายการ</p>`}
     </div></div>`;
 };
