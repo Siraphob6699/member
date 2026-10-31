@@ -246,13 +246,13 @@ P.dashboard = async () => {
 function customerTable(list, recent) {
   if (!list.length) return `<p class="text-center text-slate-400 py-12">ไม่พบลูกค้า</p>`;
   return `<div class="overflow-x-auto mt-4"><table class="w-full text-sm whitespace-nowrap">
-    <thead><tr class="bg-slate-50 text-slate-500 text-left"><th class="p-3 rounded-l-xl">ชื่อ</th><th class="p-3">เบอร์โทร</th><th class="p-3">ระดับ</th><th class="p-3 text-right">แต้ม</th><th class="p-3 text-right">${recent ? 'ยอดซื้อสะสม' : 'LINE'}</th><th class="p-3 rounded-r-xl">${recent ? 'สมัครเมื่อ' : 'ซื้อล่าสุด'}</th></tr></thead>
+    <thead><tr class="bg-slate-50 text-slate-500 text-left"><th class="p-3 rounded-l-xl">ชื่อ</th><th class="p-3">เบอร์โทร</th><th class="p-3">ระดับ</th><th class="p-3 text-right">แต้ม</th><th class="p-3 text-right">${recent ? 'ยอดซื้อสะสม' : 'LINE'}</th><th class="p-3 ${recent ? 'rounded-r-xl' : ''}">${recent ? 'สมัครเมื่อ' : 'ซื้อล่าสุด'}</th>${recent ? '' : '<th class="p-3 rounded-r-xl"></th>'}</tr></thead>
     <tbody class="divide-y divide-slate-100">${list.map(c => `<tr class="hover:bg-mint-50/50 cursor-pointer" onclick="nav('customer','${esc(c.customer_id)}')">
       <td class="p-3"><div class="flex items-center gap-3">${c.picture ? `<img src="${esc(c.picture)}" class="w-9 h-9 rounded-full object-cover" alt="">` : `<div class="w-9 h-9 rounded-full bg-mint-50 text-mint-700 grid place-items-center font-bold">${esc((c.name || '?').slice(0, 1))}</div>`}<span class="font-medium">${esc(c.name || '-')}</span></div></td>
       <td class="p-3">${esc(c.phone.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3'))}</td>
       <td class="p-3">${tierBadge(c.tier)}</td><td class="p-3 text-right font-semibold">${num(c.points)}</td>
       <td class="p-3 text-right">${recent ? baht(c.spend) : c.linked ? '<span class="text-mint-600">ผูกแล้ว</span>' : '<span class="text-slate-400">ยังไม่ผูก</span>'}</td>
-      <td class="p-3 text-slate-500">${date(recent ? c.consent_at : c.last_order)}</td></tr>`).join('')}</tbody></table></div>`;
+      <td class="p-3 text-slate-500">${date(recent ? c.consent_at : c.last_order)}</td>${recent ? '' : `<td class="p-3 text-right"><button class="${btnG}" onclick="event.stopPropagation();adjustPoints('${esc(c.customer_id)}', '${esc(c.phone)}')">${icon('coins')} เพิ่ม/ลดแต้ม</button></td>`}</tr>`).join('')}</tbody></table></div>`;
 }
 
 P.customers = async () => {
@@ -296,8 +296,8 @@ P.customer = async (id) => {
   </div>`;
 };
 
-function adjustPoints(customerId) {
-  formModal('ปรับแต้ม', [
+function adjustPoints(customerId, phone) {
+  formModal(phone ? 'เพิ่ม/ลดแต้ม ' + phone : 'ปรับแต้ม', [
     { k: 'delta', label: 'จำนวนแต้ม', type: 'number', hint: 'ใส่ติดลบเพื่อหักแต้ม เช่น -50' },
     { k: 'reason', label: 'เหตุผล (บังคับ)', type: 'textarea' },
   ], {}, async v => { await api('adjustPoints', { customerId, ...v }); refresh(); });
