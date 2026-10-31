@@ -138,17 +138,17 @@ V.home = () => {
   const ready = S.coupons.filter(c => couponState(c) === 'ready').length;
   const menu = [['gift', 'แลกรางวัล', 'rewards'], ['ticket', `คูปองของฉัน${ready ? ` (${ready})` : ''}`, 'coupons'], ['history', 'ประวัติแต้ม', 'history']];
   const picks = S.rewards.slice(0, 3);
-  return `<div class="bg-neutral-950 text-white rounded-b-[36px] pb-28">
+  return `<div class="bg-neutral-950 text-white rounded-b-[36px] pb-32">
     <div class="flex items-center justify-between px-4 h-14">
       <span class="w-9"></span><h1 class="text-[17px] font-bold">บัตรสมาชิก</h1>
       <button class="w-9 h-9 grid place-items-center" onclick="closeApp()" aria-label="ปิด">${icon('close', 'w-6 h-6')}</button>
     </div></div>
-  <div class="px-5 pb-10 -mt-24">
+  <div class="px-5 pb-10 -mt-28">
     <button onclick="go('history')" class="relative overflow-hidden block w-full text-left rounded-3xl p-5 bg-gradient-to-br ${TIER_CARD[m.tier] || TIER_CARD.Member} shadow-card ring-1 ${dark ? 'ring-white/10' : 'ring-black/5'}">
       <div class="sheen absolute inset-0 pointer-events-none ${dark ? 'opacity-30' : 'opacity-70'}"></div>
       <div class="relative">
         <div class="flex items-center gap-3">
-          ${m.picture ? `<img src="${esc(m.picture)}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white" alt="">` : `<div class="w-14 h-14 rounded-full bg-white/60 ring-2 ring-white"></div>`}
+          ${m.picture ? `<img src="${esc(m.picture)}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white" alt="">` : `<div class="w-14 h-14 rounded-full bg-neutral-300 ring-2 ring-white"></div>`}
           <div class="min-w-0"><p class="text-lg font-bold truncate">${esc(m.name)}</p>
             <span class="inline-block mt-0.5 text-xs font-semibold px-3 py-0.5 rounded-full ${dark ? 'bg-white/15' : 'bg-white/70'}">${esc(m.tier)}</span></div>
         </div>
