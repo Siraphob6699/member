@@ -133,8 +133,8 @@ V.bind = (err) => `${header('ลงทะเบียนสมาชิก', { b
 
 V.home = () => {
   const m = S.me;
-  const target = m.nextTier ? m.spend12m + m.nextTier.need : 0;
-  const pct = target ? Math.min(100, Math.round((m.spend12m / target) * 100)) : 100;
+  const target = m.nextTier ? m.spendTotal + m.nextTier.need : 0;
+  const pct = target ? Math.min(100, Math.round((m.spendTotal / target) * 100)) : 100;
   const dark = m.tier === 'Black';
   const ready = S.coupons.filter(c => couponState(c) === 'ready').length;
   const menu = [['gift', 'แลกรางวัล', 'rewards'], ['ticket', `คูปองของฉัน${ready ? ` (${ready})` : ''}`, 'coupons'], ['history', 'ประวัติแต้ม', 'history']];
@@ -381,7 +381,7 @@ const D = (() => {
   const d = n => new Date(Date.now() + n * 864e5).toISOString();
   return {
     linked: !params.has('new'),
-    me: { linked: true, name: 'คุณณิชา', picture: '', phone: '0891234567', tier: 'Silver', points: 1250, expiring: { points: 120, at: d(62) }, spend12m: 17500, nextTier: { name: 'Gold', need: 2500 } },
+    me: { linked: true, name: 'คุณณิชา', picture: '', phone: '0891234567', tier: 'Silver', points: 1250, expiring: { points: 120, at: d(62) }, spendTotal: 17500, nextTier: { name: 'Gold', need: 2500 } },
     rewards: [
       { reward_id: 'r1', name: 'ส่วนลด 100 บาท', type: 'baht', value: 100, points_cost: 1000, stock: '', valid_days: 30, min_tier: '' },
       { reward_id: 'r2', name: 'แก้วเก็บความเย็น', type: 'gift', value: 'แก้วสแตนเลส 600 ml', points_cost: 800, stock: 12, valid_days: 30, min_tier: '' },
