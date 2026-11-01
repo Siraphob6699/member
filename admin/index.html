@@ -75,7 +75,7 @@ const I = {
 };
 const icon = (n, c = 'w-5 h-5') => `<svg class="${c}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`;
 
-const TIER_BADGE = { Member: 'bg-white text-neutral-700 ring-1 ring-neutral-200', Silver: 'bg-slate-200 text-slate-700', Gold: 'bg-amber-100 text-amber-800', Black: 'bg-neutral-900 text-white' };
+const TIER_BADGE = { Member: 'bg-white text-neutral-700 ring-1 ring-neutral-200', Silver: 'bg-slate-200 text-slate-700', Gold: 'bg-amber-100 text-amber-800', Platinum: 'bg-indigo-100 text-indigo-800', Black: 'bg-neutral-900 text-white' };
 const tierBadge = t => `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${TIER_BADGE[t] || 'bg-violet-50 text-violet-700'}">${esc(t)}</span>`;
 const TYPES = [['baht', 'ส่วนลด (บาท)'], ['percent', 'ส่วนลด (%)'], ['gift', 'ของแถม'], ['shipping', 'ส่งฟรี']];
 const typeName = t => (TYPES.find(x => x[0] === t) || [, 'อื่นๆ'])[1];
