@@ -155,16 +155,16 @@ function shell() {
   app.innerHTML = `<div class="min-h-screen lg:flex">
     <div class="${A.menu ? '' : 'hidden'} lg:hidden fixed inset-0 bg-slate-900/30 z-30" onclick="A.menu=false;shell();paint()"></div>
     <aside class="${A.menu ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:sticky top-0 left-0 z-40 h-screen w-72 shrink-0 p-4 transition-transform">
-      <div class="h-full flex flex-col p-5 rounded-[1.25rem] bg-neutral-950 text-white shadow-soft">
+      <div class="card h-full flex flex-col p-5">
         <div class="flex items-center gap-3">
           <div class="w-12 h-12 rounded-2xl bg-brand-500 text-white grid place-items-center">${icon('store', 'w-6 h-6')}</div>
           <div><p class="text-lg font-bold leading-tight">Member Club</p><p class="text-xs text-neutral-400">ระบบสมาชิกสะสมแต้ม</p></div>
         </div>
-        <nav class="mt-8 space-y-1 flex-1">${NAV.map(([k, t, ic]) => `<button onclick="nav('${k}')" class="w-full flex items-center gap-4 h-12 px-4 rounded-2xl ${k === cur ? 'bg-brand-500 text-white font-bold' : 'text-neutral-300 hover:bg-white/10'}">${icon(ic, 'w-[22px] h-[22px]')}<span>${t}</span></button>`).join('')}</nav>
-        <div class="border-t border-white/10 pt-4 flex items-center gap-3">
-          <div class="w-11 h-11 rounded-full bg-white/10 text-white grid place-items-center font-bold">${esc(A.name.slice(0, 1))}</div>
+        <nav class="mt-8 space-y-1 flex-1">${NAV.map(([k, t, ic]) => `<button onclick="nav('${k}')" class="w-full flex items-center gap-4 h-12 px-4 rounded-2xl ${k === cur ? 'bg-brand-500 text-white font-bold' : 'text-neutral-600 hover:bg-neutral-100'}">${icon(ic, 'w-[22px] h-[22px]')}<span>${t}</span></button>`).join('')}</nav>
+        <div class="border-t border-neutral-100 pt-4 flex items-center gap-3">
+          <div class="w-11 h-11 rounded-full bg-brand-50 text-brand-600 grid place-items-center font-bold">${esc(A.name.slice(0, 1))}</div>
           <div class="flex-1 min-w-0"><p class="font-semibold truncate">${esc(A.name)}</p><p class="text-xs text-neutral-400">ผู้ดูแลระบบ</p></div>
-          <button onclick="logout()" class="inline-flex items-center justify-center h-9 px-3 rounded-lg text-neutral-400 hover:bg-white/10 hover:text-white" title="ออกจากระบบ" aria-label="ออกจากระบบ">${icon('out')}</button>
+          <button onclick="logout()" class="inline-flex items-center justify-center h-9 px-3 rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700" title="ออกจากระบบ" aria-label="ออกจากระบบ">${icon('out')}</button>
         </div>
       </div>
     </aside>
