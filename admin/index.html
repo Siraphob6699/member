@@ -219,9 +219,9 @@ P.dashboard = async () => {
   const change = (a, b) => b ? Math.round(((a - b) / b) * 1000) / 10 : null;
   const stat = (ic, color, label, val, fmt = num) => {
     const c = change(cur[val], prev[val]);
-    return `<div class="card p-5"><div class="flex items-center gap-3">
-      <div class="w-12 h-12 rounded-full grid place-items-center ${color}">${icon(ic, 'w-6 h-6')}</div>
-      <div class="min-w-0"><p class="text-sm text-slate-500">${label}</p><p class="text-2xl font-extrabold">${fmt(cur[val])}</p></div></div>
+    return `<div class="card p-4 sm:p-5"><div class="flex items-center gap-3">
+      <div class="hidden sm:grid w-12 h-12 shrink-0 rounded-full place-items-center ${color}">${icon(ic, 'w-6 h-6')}</div>
+      <div class="min-w-0"><p class="text-sm text-slate-500">${label}</p><p class="text-xl sm:text-2xl font-extrabold">${fmt(cur[val])}</p></div></div>
       <p class="text-xs mt-3 ${c === null ? 'text-slate-400' : c >= 0 ? 'text-emerald-600' : 'text-rose-500'} flex items-center gap-1">${c === null ? 'ยังไม่มีข้อมูลเดือนก่อน' : `${icon(c >= 0 ? 'up' : 'down', 'w-4 h-4')}<b>${c >= 0 ? '+' : ''}${c}%</b> <span class="text-slate-400">จากเดือนก่อน</span>`}</p></div>`;
   };
   const max = Math.max(1, ...d.months.map(m => m.members));
