@@ -297,7 +297,7 @@ P.customer = async (id) => {
       <p class="text-slate-500">${esc(c.phone)} · ${tierBadge(c.tier)}</p>
       <p class="text-xs text-slate-400 mt-1">วันเกิด ${date(c.birthday)} · ยอมรับ PDPA ${dt(c.consent_at)}</p>
     </div>
-    <div class="text-right"><p class="text-sm text-slate-500">แต้มคงเหลือ</p><p class="text-3xl font-extrabold text-brand-700">${num(d.points)}</p><p class="text-xs text-slate-400">ยอดซื้อ 12 เดือน ${baht(d.spend12m)}</p></div>
+    <div class="text-right"><p class="text-sm text-slate-500">แต้มคงเหลือ</p><p class="text-3xl font-extrabold text-brand-700">${num(d.points)}</p><p class="text-xs text-slate-400">ยอดซื้อรวม ${baht(d.spendTotal)}</p></div>
     <button class="${btnP}" onclick="adjustPoints('${esc(id)}')">${icon('coins')} ปรับแต้ม</button>
   </div>
   <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
@@ -307,7 +307,7 @@ P.customer = async (id) => {
       <p class="text-xs text-slate-400">${x.status === 'confirmed' ? 'ร้านยืนยันแล้ว · ใช้เมื่อ ' + dt(x.used_at) : x.status === 'used' ? 'ใช้เมื่อ ' + dt(x.used_at) : x.expires_at <= new Date().toISOString() ? 'หมดอายุ ' + date(x.expires_at) : 'ใช้ได้ถึง ' + date(x.expires_at)}</p></div>
       ${['used', 'confirmed'].includes(x.status) ? `<button class="${btnG}" onclick="restoreCoupon('${esc(x.code)}','${esc(id)}')">คืนคูปอง</button>` : '<span class="text-xs text-emerald-600 font-semibold px-3">ใช้ได้</span>'}</div>`).join('')}</div>` : empty('ยังไม่มีคูปอง'))}
     ${sec('ประวัติบิล', d.orders.length ? `<div class="divide-y divide-slate-100">${d.orders.map(o => `<div class="flex items-center gap-3 py-2.5"><div class="flex-1"><p class="font-medium">บิล #${esc(o.bill_no)}</p><p class="text-xs text-slate-400">${dt(o.created_at)}</p></div>
-      <div class="text-right"><p class="font-semibold ${o.status === 'cancelled' ? 'line-through text-slate-400' : ''}">${baht(o.net_total)}</p><p class="text-xs ${o.status === 'cancelled' ? 'text-rose-500' : 'text-emerald-600'}">${o.status === 'cancelled' ? 'ยกเลิก' : '+' + num(o.points) + ' แต้ม'}</p></div></div>`).join('')}</div>` : empty('ยังไม่มีบิล'))}
+      <div class="text-right"><p class="font-semibold ${o.status === 'cancelled' ? 'line-through text-slate-400' : ''}">${baht(o.net_total)}</p><p class="text-xs ${o.status === 'cancelled' ? 'text-rose-500' : o.status === 'pending' ? 'text-neutral-400' : 'text-emerald-600'}">${o.status === 'cancelled' ? 'ยกเลิก' : o.status === 'pending' ? 'ยังไม่เป็นสมาชิก ไม่ได้แต้ม' : '+' + num(o.points) + ' แต้ม'}</p></div></div>`).join('')}</div>` : empty('ยังไม่มีบิล'))}
     ${sec('ประวัติแต้ม', d.ledger.length ? `<div class="divide-y divide-slate-100">${d.ledger.map(l => `<div class="flex items-center gap-3 py-2.5"><div class="flex-1 min-w-0"><p class="font-medium truncate">${esc(l.reason === 'บิล' ? 'บิล #' + l.ref : l.reason)}</p>
       <p class="text-xs text-slate-400">${dt(l.created_at)}${Number(l.delta) > 0 ? ' · หมดอายุ ' + date(l.expires_at) : ''}</p></div><b class="${Number(l.delta) > 0 ? 'text-emerald-600' : 'text-rose-500'}">${Number(l.delta) > 0 ? '+' : ''}${num(l.delta)}</b></div>`).join('')}</div>` : empty('ยังไม่มีรายการ'))}
   </div>`;
@@ -467,7 +467,7 @@ P.settings = async () => {
       <div class="rounded-2xl bg-brand-50 p-4"><p class="text-sm text-slate-500">อายุแต้ม</p><p class="text-xl font-bold mt-1">${num(s.point_expiry_days)} วัน</p></div></div>
       <button class="${btnS} mt-4" onclick="editShop(${reg(s)})">${icon('edit', 'w-4 h-4')} แก้ไข</button></div>
 
-    <div class="card p-6"><h2 class="font-bold text-lg">ระดับสมาชิก · ${esc(s.name)}</h2><p class="text-sm text-slate-400">คิดจากยอดซื้อ 12 เดือนล่าสุด · ต้องมีระดับที่เกณฑ์ 0 บาท</p>
+    <div class="card p-6"><h2 class="font-bold text-lg">ระดับสมาชิก · ${esc(s.name)}</h2><p class="text-sm text-slate-400">คิดจากยอดซื้อรวมตลอดชีพ · ต้องมีระดับที่เกณฑ์ 0 บาท</p>
       <div id="tiers" class="mt-4 space-y-2">${tierRows()}</div>
       <div class="mt-4 flex gap-2"><button class="${btnG} text-brand-700" onclick="A.editTiers.push({name:'',min_spend:'',multiplier:1});document.getElementById('tiers').innerHTML=tierRows()">${icon('plus', 'w-4 h-4')} เพิ่มระดับ</button>
       <button class="${btnP} ml-auto" onclick="saveTiers(this)">บันทึกระดับ</button></div></div>` : ''}
@@ -665,7 +665,7 @@ async function demo(action, x) {
     };
     case 'customers': return DD.cust.filter(c => !x.q || c.phone.includes(x.q.replace(/\D/g, '')));
     case 'customer': { const c = DD.cust.find(y => y.customer_id === x.customerId); return {
-      customer: { ...c, birthday: '1995-04-12', consent_at: c.consent_at }, points: c.points, spend12m: c.spend,
+      customer: { ...c, birthday: '1995-04-12', consent_at: c.consent_at }, points: c.points, spendTotal: c.spend,
       links: c.linked ? [{ oa_id: 'oa1', line_user_id: 'U1', customer_id: c.customer_id, display_name: c.name.split(' ')[0], oa_name: '@mainshop', linked_at: c.consent_at }] : [],
       orders: [{ bill_no: 'KS10293', net_total: 2450, status: 'paid', points: 24, created_at: d(-1) }, { bill_no: 'KS10111', net_total: 990, status: 'cancelled', points: 9, created_at: d(-8) }],
       ledger: [{ delta: 24, reason: 'บิล', ref: 'KS10293', created_at: d(-1), expires_at: d(364) }, { delta: -1000, reason: 'แลกรางวัล ส่วนลด 100 บาท', ref: 'SF8K92QX', created_at: d(-3) }],
