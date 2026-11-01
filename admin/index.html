@@ -20,6 +20,7 @@
     .card { background: #fff; border-radius: 1.25rem; border: 1px solid #ECECEC; box-shadow: 0 4px 20px -6px rgba(15,23,42,.06); }
     .inp { width: 100%; height: 2.75rem; border-radius: .9rem; border: 1px solid #E2E8F0; padding: 0 .9rem; background: #fff; }
     .inp:focus { outline: none; border-color: #E53935; box-shadow: 0 0 0 4px #FAD4D3; }
+    @media (max-width: 639px) { .card.p-6 { padding: 1rem; } .inp { font-size: 16px; } } /* 16px stops iOS zooming into inputs */
     textarea.inp { height: auto; padding: .6rem .9rem; }
     th { font-weight: 500; }
   </style>
@@ -143,6 +144,8 @@ function confirmBox(text, onYes) {
 
 // ---------- shell ----------
 const NAV = [['dashboard', 'ภาพรวม', 'home'], ['shops', 'ร้าน', 'store'], ['customers', 'ลูกค้า', 'users'], ['coupon', 'ตรวจคูปอง', 'ticket'], ['rewards', 'ของรางวัล', 'gift'], ['campaigns', 'แคมเปญ', 'mega'], ['settings', 'ตั้งค่า', 'cog'], ['audit', 'ประวัติการแก้ไข', 'list']];
+// Phone bottom bar: what admins do most on a phone, the rest is under เมนู.
+const TABS = [['coupon', 'ตรวจคูปอง', 'ticket'], ['customers', 'ลูกค้า', 'users'], ['dashboard', 'ภาพรวม', 'home'], ['more', 'เมนู', 'menu']];
 const TITLES = {
   dashboard: ['ภาพรวม', 'สรุปข้อมูลสมาชิก และยอดขายจากระบบสะสมแต้ม'], shops: ['ร้าน', 'ร้าน KetShop และ LINE OA ที่ผูกไว้'],
   customers: ['ลูกค้า', 'ค้นหาสมาชิกด้วยเบอร์โทร'], coupon: ['ตรวจคูปอง', 'ใส่รหัสจากภาพที่ลูกค้าส่งมา เช็กว่าจริงไหม ใช้ไปแล้วหรือยัง'], customer: ['รายละเอียดลูกค้า', ''], rewards: ['ของรางวัล', 'รางวัลและคูปองที่ลูกค้าแลกได้'],
@@ -168,15 +171,17 @@ function shell() {
         </div>
       </div>
     </aside>
-    <main class="flex-1 min-w-0 p-4 lg:pl-0">
-      <div class="card p-5 lg:p-6 flex flex-wrap items-center gap-4">
-        <button class="lg:hidden ${btnG}" onclick="A.menu=true;shell();paint()">${icon('menu', 'w-6 h-6')}</button>
-        <div class="flex-1 min-w-[180px]"><h1 class="text-2xl lg:text-[28px] font-extrabold">${title}</h1>${sub ? `<p class="text-sm text-slate-400 mt-0.5">${sub}</p>` : ''}</div>
-        ${A.shops.length && !['shops', 'audit'].includes(A.page) ? `<label class="relative">${icon('store', 'w-5 h-5 absolute left-3.5 top-3 text-brand-600')}
-          <select onchange="setShop(this.value)" class="inp pl-11 pr-8 min-w-[200px]">${A.shops.map(s => `<option value="${esc(s.shop_id)}" ${s.shop_id === A.shopId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label>` : ''}
+    <main class="flex-1 min-w-0 p-3 pb-24 sm:p-4 lg:pl-0 lg:pb-4">
+      <div class="card p-4 lg:p-6 flex flex-wrap items-center gap-3 lg:gap-4">
+        <div class="flex-1 min-w-[160px]"><h1 class="text-xl lg:text-[28px] font-extrabold">${title}</h1>${sub ? `<p class="hidden sm:block text-sm text-slate-400 mt-0.5">${sub}</p>` : ''}</div>
+        ${A.shops.length > 1 || (A.shops.length && innerWidth >= 640) ? (!['shops', 'audit'].includes(A.page) ? `<label class="relative w-full sm:w-auto">${icon('store', 'w-5 h-5 absolute left-3.5 top-3 text-brand-600')}
+          <select onchange="setShop(this.value)" class="inp pl-11 pr-8 sm:min-w-[200px]">${A.shops.map(s => `<option value="${esc(s.shop_id)}" ${s.shop_id === A.shopId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label>` : '') : ''}
       </div>
-      <div id="page" class="mt-4"></div>
-    </main></div>`;
+      <div id="page" class="mt-3 sm:mt-4"></div>
+    </main>
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-20 bg-white border-t border-neutral-200 grid grid-cols-4 pb-[env(safe-area-inset-bottom)]">
+      ${TABS.map(([k, t, ic]) => { const on = k === 'more' ? A.menu : k === cur && !A.menu; return `<button onclick="${k === 'more' ? 'A.menu=true;shell();paint()' : `nav('${k}')`}" class="h-16 flex flex-col items-center justify-center gap-1 text-[11px] ${on ? 'text-brand-600 font-bold' : 'text-neutral-500'}">${icon(ic, 'w-6 h-6')}${t}</button>`; }).join('')}
+    </nav></div>`;
 }
 
 function nav(page, arg) { A.page = page; A.arg = arg; A.menu = false; shell(); paint(); window.scrollTo(0, 0); }
@@ -224,7 +229,7 @@ P.dashboard = async () => {
   const total = Object.values(d.byType).reduce((s, n) => s + n, 0);
   let acc = 0;
   const segs = Object.entries(d.byType).map(([t, n]) => { const from = acc; acc += (n / total) * 100; return `${COLORS[t] || COLORS.other} ${from}% ${acc}%`; });
-  return `<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+  return `<div class="grid grid-cols-2 xl:grid-cols-5 gap-3 sm:gap-4">
       ${stat('users', 'bg-brand-50 text-brand-600', 'สมาชิกใหม่เดือนนี้', 'members')}
       ${stat('star', 'bg-amber-50 text-amber-500', 'แต้มที่แจก', 'issued')}
       ${stat('coins', 'bg-rose-50 text-rose-500', 'แต้มที่ถูกแลก', 'redeemed')}
@@ -262,7 +267,13 @@ P.dashboard = async () => {
 
 function customerTable(list, recent) {
   if (!list.length) return `<p class="text-center text-slate-400 py-12">ไม่พบลูกค้า</p>`;
-  return `<div class="overflow-x-auto mt-4"><table class="w-full text-sm whitespace-nowrap">
+  return `<div class="sm:hidden mt-3 divide-y divide-slate-100">${list.map(c => `<div class="flex items-center gap-3 py-3" onclick="nav('customer','${esc(c.customer_id)}')">
+      ${c.picture ? `<img src="${esc(c.picture)}" class="w-10 h-10 rounded-full object-cover" alt="">` : `<div class="w-10 h-10 shrink-0 rounded-full bg-brand-50 text-brand-700 grid place-items-center font-bold">${esc((c.name || '?').slice(0, 1))}</div>`}
+      <div class="flex-1 min-w-0"><p class="font-semibold truncate">${esc(c.name || '-')} ${tierBadge(c.tier)}</p><p class="text-sm text-slate-500">${esc(c.phone.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3'))}</p></div>
+      <div class="text-right"><p class="font-bold">${num(c.points)}</p><p class="text-xs text-slate-400">แต้ม</p></div>
+      ${recent ? '' : `<button class="w-10 h-10 shrink-0 rounded-xl bg-brand-50 text-brand-600 grid place-items-center" aria-label="เพิ่ม/ลดแต้ม" onclick="event.stopPropagation();adjustPoints('${esc(c.customer_id)}', '${esc(c.phone)}')">${icon('coins')}</button>`}
+    </div>`).join('')}</div>
+  <div class="hidden sm:block overflow-x-auto mt-4"><table class="w-full text-sm whitespace-nowrap">
     <thead><tr class="bg-slate-50 text-slate-500 text-left"><th class="p-3 rounded-l-xl">ชื่อ</th><th class="p-3">เบอร์โทร</th><th class="p-3">ระดับ</th><th class="p-3 text-right">แต้ม</th><th class="p-3 text-right">${recent ? 'ยอดซื้อสะสม' : 'LINE'}</th><th class="p-3 ${recent ? 'rounded-r-xl' : ''}">${recent ? 'สมัครเมื่อ' : 'ซื้อล่าสุด'}</th>${recent ? '' : '<th class="p-3 rounded-r-xl"></th>'}</tr></thead>
     <tbody class="divide-y divide-slate-100">${list.map(c => `<tr class="hover:bg-brand-50/50 cursor-pointer" onclick="nav('customer','${esc(c.customer_id)}')">
       <td class="p-3"><div class="flex items-center gap-3">${c.picture ? `<img src="${esc(c.picture)}" class="w-9 h-9 rounded-full object-cover" alt="">` : `<div class="w-9 h-9 rounded-full bg-brand-50 text-brand-700 grid place-items-center font-bold">${esc((c.name || '?').slice(0, 1))}</div>`}<span class="font-medium">${esc(c.name || '-')}</span></div></td>
@@ -290,14 +301,14 @@ P.customer = async (id) => {
   const sec = (title, body) => `<div class="card p-6"><h2 class="font-bold text-lg">${title}</h2><div class="mt-4">${body}</div></div>`;
   const empty = t => `<p class="text-slate-400 text-sm">${t}</p>`;
   return `<button class="${btnG} mb-3" onclick="nav('customers')">${icon('back')} กลับไปรายชื่อลูกค้า</button>
-  <div class="card p-6 flex flex-wrap items-center gap-5">
-    <div class="w-16 h-16 rounded-full bg-brand-50 text-brand-700 grid place-items-center text-2xl font-bold">${esc(((d.links[0] || {}).display_name || '?').slice(0, 1))}</div>
+  <div class="card p-5 sm:p-6 flex flex-wrap items-center gap-4 sm:gap-5">
+    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-brand-50 text-brand-700 grid place-items-center text-2xl font-bold">${esc(((d.links[0] || {}).display_name || '?').slice(0, 1))}</div>
     <div class="flex-1 min-w-[200px]">
       <p class="text-xl font-bold">${esc((d.links[0] || {}).display_name || 'ยังไม่ผูก LINE')}</p>
       <p class="text-slate-500">${esc(c.phone)} · ${tierBadge(c.tier)}</p>
       <p class="text-xs text-slate-400 mt-1">วันเกิด ${date(c.birthday)} · ยอมรับ PDPA ${dt(c.consent_at)}</p>
     </div>
-    <div class="text-right"><p class="text-sm text-slate-500">แต้มคงเหลือ</p><p class="text-3xl font-extrabold text-brand-700">${num(d.points)}</p><p class="text-xs text-slate-400">ยอดซื้อรวม ${baht(d.spendTotal)}</p></div>
+    <div class="sm:text-right"><p class="text-sm text-slate-500">แต้มคงเหลือ</p><p class="text-3xl font-extrabold text-brand-700">${num(d.points)}</p><p class="text-xs text-slate-400">ยอดซื้อรวม ${baht(d.spendTotal)}</p></div>
     <button class="${btnP}" onclick="adjustPoints('${esc(id)}')">${icon('coins')} ปรับแต้ม</button>
   </div>
   <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
