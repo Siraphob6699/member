@@ -32,6 +32,7 @@ const params = new URLSearchParams(location.search);
 // LIFF passes our query inside liff.state on the first redirect
 const stateQs = new URLSearchParams((params.get('liff.state') || '').replace(/^[^?]*\?/, ''));
 const OA = params.get('oa') || stateQs.get('oa');
+let VIEW = params.get('view') || stateQs.get('view'); // e.g. 'rewards' from the button in the points message
 const DEMO = !API || params.has('demo');
 
 const S = { idToken: null, me: null, rewards: [], coupons: [], history: [], stack: [] };
@@ -349,6 +350,7 @@ function showHome(h, show) {
   if (!show) return;
   if (!S.stack.length || S.stack[0][0] === 'bind') S.stack = [['home']];
   if (S.stack.length === 1) render();
+  if (VIEW === 'rewards' && S.stack.length === 1) { VIEW = null; go('rewards'); }
 }
 
 // History & coupon screens reload on open so a bill or redemption made elsewhere shows up.
